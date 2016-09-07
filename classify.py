@@ -10,6 +10,7 @@ from sklearn.cross_validation import cross_val_score
 import enchant
 import email
 import string
+import re
 from collections import OrderedDict
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -41,9 +42,28 @@ df = df.sample(frac=1).reset_index(drop=True)
 # 1) Longitud del mail.
 df['len'] = map(len, df.text)
 
-# 2) Cantidad de espacios en el mail.
+closing_tags = re.compile('.*</.*|.*/>.*')
+links = re.compile('.*href=.*')
 def count_spaces(txt): return txt.count(" ")
+def has_closing_tags(x):
+	if closing_tags.match(x.replace('\n',' ')):
+		return True
+	else:
+		return False
+
+def has_links(x):
+	if links.match(x.replace('\n',' ')):
+		return True
+	else:
+		return False
+
+# 2) Cantidad de espacios en el mail.
 df['count_spaces'] = map(count_spaces, df.text)
+
+print df.text[0]
+df['has_tags1'] = map(has_closing_tags, df.text)
+df['has_links'] = map(has_links, df.text)
+# df['has_link'] = map(lambda x: prog.match(x).group(0), df.text)
 
 # bag of words: https://en.wikipedia.org/wiki/Bag-of-words_model
 d = enchant.Dict("en_US")
@@ -154,8 +174,11 @@ select_cols = df.columns.tolist()
 select_cols.remove('class')
 select_cols.remove('text')
 
+print df
 X = df[select_cols].values
 y = df['class']
+
+
 
 # Ejecuto el clasificador entrenando con un esquema de cross validation
 # de 10 folds.
@@ -171,19 +194,19 @@ res = cross_val_score(gnb, X, y, cv=10)
 print np.mean(res), np.std(res)
 
 print "K Nearest Neighbours"
-neigh = KNeighborsClassifier(n_neighbors=10)
+neigh = KNeighborsClassifier(n_neighbors=5)
 res = cross_val_score(neigh, X, y, cv=10)
 print np.mean(res), np.std(res)
 
-print "Support Vector Machine (SVM)"
-svc = svm.SVC()
-res = cross_val_score(svc, X, y, cv=10)
-print np.mean(res), np.std(res)
+# print "Support Vector Machine (SVM)"
+# svc = svm.SVC()
+# res = cross_val_score(svc, X, y, cv=10)
+# print np.mean(res), np.std(res)
 
-print "Random Forest Classifier"
-rf = RandomForestClassifier(n_estimators=100)
-res = cross_val_score(rf, X, y, cv=10)
-print np.mean(res), np.std(res)
+# print "Random Forest Classifier"
+# rf = RandomForestClassifier(n_estimators=100)
+# res = cross_val_score(rf, X, y, cv=10)
+# print np.mean(res), np.std(res)
 
 # Model selection and evaluation using tools, such as grid_search.GridSearchCV and 
 # cross_validation.cross_val_score, take a scoring parameter that controls what metric they apply to the estimators evaluated.
