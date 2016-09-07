@@ -25,10 +25,10 @@ ham_len  = len(ham_txt)
 spam_len = len(spam_txt)
 
 # Imprimo un mail de ham y spam como muestra.
-# print ham_txt[0]
-# print "------------------------------------------------------"
-# print spam_txt[0]
-# print "------------------------------------------------------"
+#print ham_txt[0]
+#print "------------------------------------------------------"
+#print spam_txt[0]
+#print "------------------------------------------------------"
 
 # Armo un dataset de Pandas 
 # http://pandas.pydata.org/
@@ -134,7 +134,10 @@ features = ['please','the','thanks', 'original', 'message', 'know', 'will', 'thi
 'schedule', 'has', 'need', 'there', 'review', 'final', '2002', 'not', 'corp', 'but', 'money', 'deal', 'with', 'should', 'following', 'they', 'think', 
 'also', 'contract', 'john', 'work', 'mark', 'only', '2005', 'file', 'you', 'forwarded', 'issues', 'start', 'however', 'our', '2004', 'professional', 
 'what', 'some', 'last', 'back', 'plan', 'trading', 'more', 'between', 'well', 'still', 'them', 'log', 'stocks', 'statements', 'investing', 'comments', 
-'see', 'software', 'advice', 'morning', 'discuss', 'been', 'adobe', 'when', 'today', 'thank', '2000', 'said', 'agreement', 'was', 'data', 'mike', 'received', 'changes', 'had']
+'see', 'software', 'advice', 'morning', 'discuss', 'been', 'adobe', 'when', 'today', 'thank', '2000', 'said', 'agreement', 'was', 'data', 'mike',
+ 'received', 'changes', 'had', 'discount', 'deal', 'opportunity', 'chance', 'click', 'product', 'policy', 'order', 'special', 'credit', 'freebies', 
+ 'free', 'bucks', 'limited time', 'dream', 'unknown', 'xxx', 'teen', 'teens', 'ass', 'anal', 'penis', 'viagra', 'Niger','dear', 'see you soon', 'tomorrow', 
+ 'told', 'said', 'regards', 'meeting', 'let me know', 'lol', 'thanx', 'customer', 'listprice', '$', '</']
 
 for feature in features:
 	df[feature] = map(lambda s: feature in s, df.text)
