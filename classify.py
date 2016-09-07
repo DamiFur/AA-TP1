@@ -60,10 +60,8 @@ def has_links(x):
 # 2) Cantidad de espacios en el mail.
 df['count_spaces'] = map(count_spaces, df.text)
 
-print df.text[0]
-df['has_tags1'] = map(has_closing_tags, df.text)
-df['has_links'] = map(has_links, df.text)
-# df['has_link'] = map(lambda x: prog.match(x).group(0), df.text)
+# df['has_tags'] = map(has_closing_tags, df.text)
+# df['has_links'] = map(has_links, df.text)
 
 # bag of words: https://en.wikipedia.org/wiki/Bag-of-words_model
 d = enchant.Dict("en_US")
@@ -157,7 +155,7 @@ features = ['please','the','thanks', 'original', 'message', 'know', 'will', 'thi
 'see', 'software', 'advice', 'morning', 'discuss', 'been', 'adobe', 'when', 'today', 'thank', '2000', 'said', 'agreement', 'was', 'data', 'mike',
  'received', 'changes', 'had', 'discount', 'deal', 'opportunity', 'chance', 'click', 'product', 'policy', 'order', 'special', 'credit', 'freebies', 
  'free', 'bucks', 'limited time', 'dream', 'unknown', 'xxx', 'teen', 'teens', 'ass', 'anal', 'penis', 'viagra', 'Niger','dear', 'see you soon', 'tomorrow', 
- 'told', 'said', 'regards', 'meeting', 'let me know', 'lol', 'thanx', 'customer', 'listprice', '$', '</']
+ 'told', 'said', 'regards', 'meeting', 'let me know', 'lol', 'thanx', 'customer', 'listprice', '$', '</', 'href', '$']
 
 for feature in features:
 	df[feature] = map(lambda s: feature in s, df.text)
