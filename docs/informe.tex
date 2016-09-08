@@ -1,0 +1,108 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[paper=a4paper, hmargin=1.5cm, bottom=1.5cm, top=3cm]{geometry}
+
+\usepackage[utf8x]{inputenc}
+\usepackage[spanish]{babel}
+
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\usepackage{xcolor}
+\usepackage{listingsutf8}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{multirow}
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{relsize}
+\usepackage{epstopdf}
+
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+% set the default code style
+\lstset{
+    frame=tb, % draw a frame at the top and bottom of the code block
+    tabsize=4, % tab space width
+    showstringspaces=false, % don't mark spaces in strings
+    numbers=left, % display line numbers on the left
+    commentstyle=\color{green}, % comment color
+    keywordstyle=\color{blue}, % keyword color
+    stringstyle=\color{red} % string color
+}
+
+% mathy stuff
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposición}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\newenvironment{proof}[1][Demostración]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{definition}[1][Definición]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{example}[1][Example]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+\newenvironment{remark}[1][Remark]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+      \ifdim\lastskip<1.5em \hskip-\lastskip
+      \hskip1.5em plus0em minus0.5em \fi \nobreak
+      \vrule height0.75em width0.5em depth0.25em\fi}
+
+\title{Aprendizaje Automatico \\ Trabajo Práctico 1 \\ Detección de Spam }
+
+\newcommand{\order}[1]{$\mathcal{O}(#1)$}
+
+\begin{document}
+
+%% cover page
+
+\maketitle
+
+\bigskip
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l l l|}
+\hline
+Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico        \\ \hline
+Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com \\ 
+Damián Furman & 	936/11                      & z \\
+Germán Abrevaya & y                      & x \\ \hline
+\end{tabular}
+\end{table}
+
+\vfill
+
+\begin{center}
+\textbf{Reservado para la cátedra}
+\end{center}
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Instancia       & Docente & Nota \\ \hline
+Primera entrega &         &      \\ \hline
+Segunda entrega &         &      \\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+\tableofcontents
+\newpage
+
+% end cover page
+
+\section{Introduccion}
+
+\end{document}
