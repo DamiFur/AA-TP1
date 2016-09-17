@@ -1,97 +1,116 @@
 # Aprendizaje Automatico - DC, FCEN, UBA
 # Segundo cuatrimestre 2016
 
+import sys
+
 import json
 import numpy as np
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.cross_validation import cross_val_score
 
-import enchant
 import email
 import string
 import re
+from html.parser import HTMLParser
+
 from collections import OrderedDict
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.cross_validation import cross_val_score
+from sklearn.cross_validation import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer # Bag of words
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 # import validators
 
+class MLStripper(HTMLParser):
+	def __init__(self):
+		super().__init__()
+		self.reset()
+		self.fed = []
+
+	def handle_data(self, d):
+		self.fed.append(d)
+	def get_data(self):
+		return ''.join(self.fed)
+
+def strip_tags(html):
+	s = MLStripper()
+	s.feed(html)
+	return s.get_data()
+
 def removeNonAsciiChars(str):
 	printable = set(string.printable)
 	return filter(lambda x: x in printable, str)
 
+def to_ascii(txt):
+	txt = txt.encode('ascii',errors='ignore')
+	txt = txt.decode('ascii',errors='ignore')
+	return txt
+
+# https://docs.python.org/2/library/email.message.html#email.message.Message
+def getEmailBodyFromMime(mime):
+	body = ''
+	mime = to_ascii(mime)
+	msg = email.message_from_string(mime) # remove non utf-8 chars
+	for part in msg.walk():
+		if part.get_content_type() == 'text/plain':
+			body = part.get_payload()
+		elif part.get_content_type() == 'text/html':
+			body = part.get_payload()
+			body = strip_tags(body) # remove html tags
+	# except:
+	# 	print("Error decoding body.")
+
+	return body
+
 def getAttributesByFrequency(df):
 
 	# bag of words: https://en.wikipedia.org/wiki/Bag-of-words_model
-	d = enchant.Dict("en_US")
-	# pip install pyenchant
 
 	# MIME
 	# https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html
 
+	# MIME parser
 	# https://docs.python.org/2/library/email.parser.html
+
 	frequencies = {}
 	i = 1
 	for index, row in df.iterrows():
 
-		if i > 1000:
-			break
-		else:
-			i = i + 1
-
-		# print row['c1'], row['c2']
-
-		try:
-			msg = email.message_from_string(removeNonAsciiChars(row['text']))
-		except:
-			print "Skipped message!"
-			print row['text']
-			continue
+		# if i > 1000:
+		# 	break
+		# else:
+		# 	i = i + 1
 
 		msg_class = row['class']
-		# print msg.keys()
-		
-		# not multipart - i.e. plain text, no attachments, keeping fingers crossed
-		body = msg.get_payload(decode=True)
 
-		if msg.is_multipart():
-		    for part in msg.walk():
-		        ctype = part.get_content_type()
-		        cdispo = str(part.get('Content-Disposition'))
+		# msg = getEmailBodyFromMime(row['text']) # remove non utf-8 chars
+		msg = row['mime_body']
 
-		        # skip any text/plain (txt) attachments
-		        if ctype == 'text/plain' and 'attachment' not in cdispo:
-		            body = part.get_payload(decode=True)  # decode
-		            break
+		def remove_characters(str, chars):
+			str = re.sub(r'^http.?:\/\/.*[\r\n]*', '', str, flags=re.MULTILINE)
+			for c in chars:
+				str = str.replace(c, ' ')
+			return str
 
+		msg = remove_characters(msg, {'\\','(',')','-','\'','=','<','>',',','.',':','#','!','www','/','[',']'})
+		msg = msg.lower()
 
-		try:
-			words = body.split()
-		except:
-			print msg
-			continue
+		words = msg.split()
+		quantity_words = len(set(words))
 
 		for word in set(words):
 
-			word = word.strip(',.-')
-			word = word.lower()
-			# word = filter(lambda x: x in printable, word)
-
-			if len(word) <= 2: continue
-
-			try:
-				if not d.check(word): continue
-			except:
-				continue
+			if len(word) <= 2 or len(word) >= 20 or word.isdigit(): continue
 
 			if word in frequencies:
 				freq = frequencies[word];
 				if msg_class == "spam":
 					freq[0] = freq[0] + 1
 				else:
-					freq[1] = freq[1] + 1
+					freq[1] = freq[1] + 1 
 			else:
 				if msg_class == "spam":
 					frequencies[word] = [1,0]
@@ -99,156 +118,147 @@ def getAttributesByFrequency(df):
 					frequencies[word] = [0,1]
 
 
-	dictOrd = OrderedDict(sorted(frequencies.items(), key=lambda e: abs(e[1][0] - e[1][1] ), reverse=True)) # cuidado aca, no lo pondere porque hay el mismo numero de ham spam
+	dictOrd = OrderedDict(sorted(frequencies.items(), key=lambda e: abs(e[1][0] - e[1][1]), reverse=True)) # cuidado aca, no lo pondere porque hay el mismo numero de ham spam
 
 	words = []
 
-	for i in range(1,100):
-		print i, dictOrd.items()[i]
-		word = dictOrd.items()[i][0]
-		words.append(word)
+	i = 1
+	for key, value in dictOrd.items():
+		if i == 200:
+			break
+		print(key , value)
+		i = i + 1
+		words.append(key)
 
 	return words
 
 
 if __name__=="__main__":
 
-	# Leo los mails (poner los paths correctos).
+	# read emails from json
 	ham_txt  = json.load(open('dataset_dev/ham_dev.json'))
 	spam_txt = json.load(open('dataset_dev/spam_dev.json'))
 
 	ham_len  = len(ham_txt)
 	spam_len = len(spam_txt)
 
-	# Imprimo un mail de ham y spam como muestra.
-	#print ham_txt[0]
-	#print "------------------------------------------------------"
-	#print spam_txt[0]
-	#print "------------------------------------------------------"
-
-	# Armo un dataset de Pandas 
+	# create pandas dataframe
 	# http://pandas.pydata.org/
 	df = pd.DataFrame(ham_txt+spam_txt, columns=['text'])
 	df['class'] = ['ham' for _ in range(len(ham_txt))]+['spam' for _ in range(len(spam_txt))]
 
-	df = df.sample(frac=1).reset_index(drop=True)
+	# create test set and validation set. the test set will have 20% of the data.
+	# maybe a good idea would be to take 20% of the data in each set (ham and spam)
+	# instead of doing general sampling to get a more representative dataset.
+	#random.seed(42) # set seed to avoid having different sets on every run.
+	df, test = train_test_split(df, test_size = 0.1)
 
-	# Extraigo dos atributos simples: 
-	# 1) Longitud del mail.
-	df['len'] = map(len, df.text)
+	df['mime_body'] = list(map(getEmailBodyFromMime, df.text))
 
+	# begin attribute extraction
+	# email length
+	df['len'] = list(map(lambda mime_body: len(mime_body), df.mime_body))
+
+	# amount of spaces in email
+	def count_spaces(str): return str.count(" ")
+	df['count_spaces'] = list(map(count_spaces, df.mime_body))
+
+	# amount of closing tags in email
 	closing_tags = re.compile('.*</.*|.*/>.*')
+	def has_closing_tags(str):
+		if closing_tags.match(str.replace('\n',' ')):
+			return True
+		else:
+			return False
+	df['has_tags'] = list(map(has_closing_tags, df.mime_body))
+
+	# binary variable that is 1 if the email has any links
 	links = re.compile('.*href=.*')
-	def count_spaces(txt): return txt.count(" ")
 
-	def has_closing_tags(x):
-		if closing_tags.match(x.replace('\n',' ')):
+	def has_links(str):
+		if links.match(str.replace('\n',' ')):
 			return True
 		else:
 			return False
 
-	def has_links(x):
-		if links.match(x.replace('\n',' ')):
-			return True
-		else:
-			return False
+	df['has_links'] = list(map(has_links, df.mime_body))
 
-	# 2) Cantidad de espacios en el mail.
-	df['count_spaces'] = map(count_spaces, df.text)
+	# amount of multiparts
+	def mime_multipart(mime):
+		mime = to_ascii(mime)
+		msg = email.message_from_string(mime)
+		i = 0
+		for part in msg.walk():
+			i = i+1;
+		return i
 
-	# df['has_tags'] = map(has_closing_tags, df.text)
-	# df['has_links'] = map(has_links, df.text)
+	df['multipart'] = list(map(mime_multipart, df.text))
 
-
-	# msg = email.message_from_string(spam_txt[0])
-
-	# print msg.keys()
-
-	# print msg.items()
-
-	# for part in msg.walk():
-	# 	print part.get_content_type()
-
-	# print msg
-
-	def mime_multipart(mime_txt):
-		try:
-			msg = email.message_from_string(removeNonAsciiChars(mime_txt))
-			return msg.is_multipart()
-		except Exception,e:
-			print e
-
-
-			# print mime_txt
-			# print "-"*100
-			# return 0
-
-	df['multipart'] = map(mime_multipart, df.text)
-
-	# settear features para ahorrar tiempo, para recalcular usar lo de arriba
-	features = ['please','the','thanks', 'original', 'message', 'know', 'will', 'this', 'public', 'call', 'have', 'let', 'that', 'attached', 'questions', 
-	'any', 'would', 'gas', 'for', 'server', 'exchange', 'converted', 'format', 'meeting', 'group', 'energy', 'power', 'week', 'are', 'your', 'version', 
-	'schedule', 'has', 'need', 'there', 'review', 'final', '2002', 'not', 'corp', 'but', 'money', 'deal', 'with', 'should', 'following', 'they', 'think', 
-	'also', 'contract', 'john', 'work', 'mark', 'only', '2005', 'file', 'you', 'forwarded', 'issues', 'start', 'however', 'our', '2004', 'professional', 
-	'what', 'some', 'last', 'back', 'plan', 'trading', 'more', 'between', 'well', 'still', 'them', 'log', 'stocks', 'statements', 'investing', 'comments', 
-	'see', 'software', 'advice', 'morning', 'discuss', 'been', 'adobe', 'when', 'today', 'thank', '2000', 'said', 'agreement', 'was', 'data', 'mike',
-	 'received', 'changes', 'had', 'discount', 'deal', 'opportunity', 'chance', 'click', 'product', 'policy', 'order', 'special', 'credit', 'freebies', 
-	 'free', 'bucks', 'limited time', 'dream', 'unknown', 'xxx', 'teen', 'teens', 'ass', 'anal', 'penis', 'viagra', 'Niger','dear', 'see you soon', 'tomorrow', 
-	 'told', 'said', 'regards', 'meeting', 'let me know', 'lol', 'thanx', 'customer', 'listprice', '$', '</', 'href', '$']
+	# these are attributes we gathered using getAttributesByFrequency. we pre-calculate them to avoid having to wait every run.
+	features = ['please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
+	'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
+	'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
+	'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
+	'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
+	'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
+	'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
+	'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
+	'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
+	'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars']
 
 	# features = getAttributesByFrequency(df)
 
-	print features
+	print(features)
 
+	# set extracted features by frequency
 	for feature in features:
-		df[feature] = map(lambda s: feature in s, df.text)
+		df[feature] = list(map(lambda mime_body: feature in mime_body, df.mime_body))
 
-	# other features:
-	# Analyize MIME structure... e.g. len(multipart)
-	# Contains characters other than UTF8?, ascii?
-	# number of recipients
+	# other proposed features:
+	# Contains characters other than UTF8?
 	# type of file attached
 	# exclamation marks
 	# importar alguna libreria de NLP, y probar?
-	# paralelizar el bag of words para mejorar velocidad (ahora tarda bastante)
 	# implementar leave out set para testing (seguramente la libreria lo tiene)
 	# hacer grafico de keywords (freq en ham vs freq en spam)
-	# Preparo data para clasificar
+
+	# prepare data and train classifiers
 	select_cols = df.columns.tolist()
 	select_cols.remove('class')
 	select_cols.remove('text')
+	select_cols.remove('mime_body')	
 
-	# print df
+	# print(df)
 	X = df[select_cols].values
 	y = df['class']
 
 	# Ejecuto el clasificador entrenando con un esquema de cross validation
 	# de 10 folds.
-	print "Decision Tree Classifier"
+	print("Decision Tree Classifier")
 	dtc = DecisionTreeClassifier()
 	res = cross_val_score(dtc, X, y, cv=10)
-	print np.mean(res), np.std(res)
+	print(np.mean(res), np.std(res))
 	# salida: 0.687566666667 0.0190878702354  (o similar)
 
-	print "Naive Bayes with Gaussian probabilities"
-	gnb = GaussianNB()
-	res = cross_val_score(gnb, X, y, cv=10)
-	print np.mean(res), np.std(res)
+	# print("Naive Bayes with Gaussian probabilities")
+	# gnb = GaussianNB()
+	# res = cross_val_score(gnb, X, y, cv=10)
+	# print(np.mean(res), np.std(res))
 
-	print "K Nearest Neighbours"
-	neigh = KNeighborsClassifier(n_neighbors=5)
-	res = cross_val_score(neigh, X, y, cv=10)
-	print np.mean(res), np.std(res)
+	# print("K Nearest Neighbours") # creo que no tiene sentido
+	# neigh = KNeighborsClassifier(n_neighbors=5)
+	# res = cross_val_score(neigh, X, y, cv=10)
+	# print(np.mean(res), np.std(res))
 
-	# print "Support Vector Machine (SVM)"
+	# print("Support Vector Machine (SVM)") # no tiene sentido
 	# svc = svm.SVC()
 	# res = cross_val_score(svc, X, y, cv=10)
-	# print np.mean(res), np.std(res)
+	# print(np.mean(res), np.std(res))
 
-	# print "Random Forest Classifier"
+	# print("Random Forest Classifier")
 	# rf = RandomForestClassifier(n_estimators=100)
 	# res = cross_val_score(rf, X, y, cv=10)
-	# print np.mean(res), np.std(res)
+	# print(np.mean(res), np.std(res))
 
 	# Model selection and evaluation using tools, such as grid_search.GridSearchCV and 
 	# cross_validation.cross_val_score, take a scoring parameter that controls what metric they apply to the estimators evaluated.

@@ -1,5 +1,5 @@
 \documentclass[10pt,a4paper]{article}
-\usepackage[paper=a4paper, hmargin=1.5cm, bottom=1.5cm, top=3cm]{geometry}
+\usepackage[paper=a4paper]{geometry}
 
 \usepackage[utf8x]{inputenc}
 \usepackage[spanish]{babel}
@@ -103,6 +103,75 @@ Segunda entrega &         &      \\ \hline
 
 % end cover page
 
-\section{Introduccion}
+\section{Introducción}
+
+El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para poder buscar alguna forma de evitar hacer overfitting de los datos. Dejamos el 10\% de los datos como training set, utilizando el resto para experimentar con los diferentes modelos.
+
+\section{Extracción de atributos}
+
+\subsection{Bag of words}
+
+En una primera etapa, antes de intentar seleccionar atributos de forma manual, la idea fue analizar la frecuencia de cada palabra en cada mail, ignorando el orden de las palabras. Notar que los mails están en formato MIME, por lo que no se podía simplemente hacer un análisis de frecuencia sobre el MIME en plaintext, si no que había que utilizar un parser para luego poder analizar las diferentes partes de cada correo. Ademas, muchos de los correos no estaban en utf-8, lo que dificultaba el analisis. Por esa razón decidimos ignorarlos para el análisis de frecuencia.
+
+Dado que el alto tiempo de computo para calcular la frecuencia de cada palabra en cada mail, decidimos simplemente tomar una variable binaria por mail que indica si la misma esta o no en el mismo. La idea fue calcular por clase cuantas veces aparecía cada palabra en el cuerpo de un correo, para luego ordenar todas las palabras por la diferencia absoluta en frecuencia relativa y de esa forma seleccionar los mejores atributos. Seguramente existe un orden mejor, pero lo que buscábamos era encontrar las palabras que mas distinguían entre las dos clases. Una idea que teníamos a priori además es que todas las conjunciones iban a aparecer con la misma frecuencia en ambas clases, por lo que al calcular el score se compensarían y no aparecerían en nuestros resultados finales. Además ignoramos todos los números, dado que creemos que no es un buen predictor.
+
+En una primera instancia, decidimos tomar las mejores 200 palabras ordenadas por nuestro score para luego intentar seleccionar un subconjunto.
+
+Por un lado creemos que todas las palabras que son sustantivos propios referidos a meses o nombres de personas no son buenos predictores. Lo mismo sucede con las conjunciones que finalmente terminaron apareciendo. De esta manera terminamos con el siguiente conjunto de palabras:
+
+['please', 'original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
+	'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
+	'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
+	'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
+	'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
+	'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
+	'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
+	'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
+	'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
+	'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars']
+
+\pagebreak
+
+Por un lado unificamos las palabras 'original' y 'message', que en general muestran mensajes donde se hizo 'reply' o 'reply all'. Por otro lado, la palabra 'enron' aparecía bastante, lo que nos hizo pensar que el dataset que teníamos era el de Enron. Nos cuestionamos un poco que tan representativo es este dataset, dado que corresponde en general a mails corporativos. Notar que este mismo procedimiento se puede hacer para el titulo de los correos.
+
+\subsection{Selección manual}
+
+Luego de seleccionar los primeros atributos utilizando nuestra variacion de Bag of Words, decidimos elegir algunos otros atributos de forma manual. Estos fueron:
+
+\begin{itemize}
+	\item has\_closing\_tags
+	\item has\_links
+	\item is\_multipart
+\end{itemize}
+
+\subsection{Otras alternativas}
+
+Utilizar NLP.
+
+\section{Modelos}
+
+Listar los algoritmos de aprendizaje elegidos para experimentar. Describir cualquier decisión que hayan tomado (p.ej., elección de hiperparámetros).
+
+Discutir por que pensamos que no tiene sentido hacer SVM o kNN.
+
+\subsection{Logistic Regression}
+\subsection{Naive Bayes}
+\subsection{Decision Tree Classifier}
+\subsection{Random Forests}
+\subsection{Bagging}
+\subsection{Stacking}
+
+\section{Reducción de dimensionalidad}
+
+Describir brevemente las técnicas empleadas. PCA y penalidades.
+
+\section{Resultados}
+Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
+
+
+\section{Discusión}
+
+Analizar los resultados, buscando responder cuestiones como, por ejemplo: ¿cuáles son los atributos encontrados con mayor poder predictivo?, ¿cuán sensibles fueron los algoritmos a las técnicas de reducción de dimensionalidad consideradas?, ¿resultó clara la elección del algoritmo para la competencia, o hubo que poner en la balanza distintos factores?
+
 
 \end{document}
