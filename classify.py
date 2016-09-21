@@ -22,6 +22,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
+import pickle # model persistance
 # import validators
 
 class MLStripper(HTMLParser):
@@ -60,8 +61,6 @@ def getEmailBodyFromMime(mime):
 		elif part.get_content_type() == 'text/html':
 			body = part.get_payload()
 			body = strip_tags(body) # remove html tags
-	# except:
-	# 	print("Error decoding body.")
 
 	return body
 
@@ -132,26 +131,8 @@ def getAttributesByFrequency(df):
 
 	return words
 
-
-if __name__=="__main__":
-
-	# read emails from json
-	ham_txt  = json.load(open('dataset_dev/ham_dev.json'))
-	spam_txt = json.load(open('dataset_dev/spam_dev.json'))
-
-	ham_len  = len(ham_txt)
-	spam_len = len(spam_txt)
-
-	# create pandas dataframe
-	# http://pandas.pydata.org/
-	df = pd.DataFrame(ham_txt+spam_txt, columns=['text'])
-	df['class'] = ['ham' for _ in range(len(ham_txt))]+['spam' for _ in range(len(spam_txt))]
-
-	# create test set and validation set. the test set will have 20% of the data.
-	# maybe a good idea would be to take 20% of the data in each set (ham and spam)
-	# instead of doing general sampling to get a more representative dataset.
-	#random.seed(42) # set seed to avoid having different sets on every run.
-	df, test = train_test_split(df, test_size = 0.1)
+# rebuild = True if features from data frequency must be rebuilt.
+def buildFeaturesFromData(df, rebuild = True):
 
 	df['mime_body'] = list(map(getEmailBodyFromMime, df.text))
 
@@ -194,25 +175,53 @@ if __name__=="__main__":
 
 	df['multipart'] = list(map(mime_multipart, df.text))
 
-	# these are attributes we gathered using getAttributesByFrequency. we pre-calculate them to avoid having to wait every run.
-	features = ['please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
-	'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
-	'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
-	'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
-	'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
-	'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
-	'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
-	'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
-	'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
-	'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars']
+	if rebuild:
+		features = getAttributesByFrequency(df)
+	else:
+		# these are attributes we gathered using getAttributesByFrequency. we pre-calculate them to avoid having to wait every run.
+		features = ['please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
+		'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
+		'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
+		'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
+		'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
+		'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
+		'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
+		'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
+		'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
+		'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars']
 
-	# features = getAttributesByFrequency(df)
-
-	print(features)
+	# print(features)
 
 	# set extracted features by frequency
 	for feature in features:
 		df[feature] = list(map(lambda mime_body: feature in mime_body, df.mime_body))
+
+
+if __name__=="__main__":
+
+	BEGIN_COMPETITION = True
+
+	# read emails from json
+	ham_txt  = json.load(open('dataset_dev/ham_dev.json'))
+	spam_txt = json.load(open('dataset_dev/spam_dev.json'))
+
+	ham_len  = len(ham_txt)
+	spam_len = len(spam_txt)
+
+	# create pandas dataframe (http://pandas.pydata.org/)
+	df = pd.DataFrame(ham_txt+spam_txt, columns=['text'])
+	df['class'] = ['ham' for _ in range(len(ham_txt))]+['spam' for _ in range(len(spam_txt))]
+
+	# create test set and validation set. the test set will have 10% of the data.
+	# maybe a good idea would be to take 10% of the data in each set (ham and spam)
+	# instead of doing general sampling to get a more representative dataset.
+	# random.seed(42) # set seed to avoid having different sets on every run.
+	df, test = train_test_split(df, test_size = 0.1)
+
+	# in the future, we should be able to just save the model parameters
+	# instead of having to retrain the whole thing
+	buildFeaturesFromData(df,   False)
+	buildFeaturesFromData(test, False)
 
 	# other proposed features:
 	# Contains characters other than UTF8?
@@ -221,6 +230,7 @@ if __name__=="__main__":
 	# importar alguna libreria de NLP, y probar?
 	# implementar leave out set para testing (seguramente la libreria lo tiene)
 	# hacer grafico de keywords (freq en ham vs freq en spam)
+	# hacer analisis de palabras en los subjects de los mails (usar libreria de MIME)
 
 	# prepare data and train classifiers
 	select_cols = df.columns.tolist()
@@ -229,35 +239,60 @@ if __name__=="__main__":
 	select_cols.remove('mime_body')	
 
 	# print(df)
-	X = df[select_cols].values
-	y = df['class']
+	X_train = df[select_cols].values
+	y_train = df['class']
+
+	X_test  = test[select_cols].values
+	y_test = test['class']
 
 	# Ejecuto el clasificador entrenando con un esquema de cross validation
 	# de 10 folds.
 	print("Decision Tree Classifier")
 	dtc = DecisionTreeClassifier()
-	res = cross_val_score(dtc, X, y, cv=10)
-	print(np.mean(res), np.std(res))
+	res = cross_val_score(dtc, X_train, y_train, cv=10)
+	print("Cross validation: ", np.mean(res), np.std(res))
 	# salida: 0.687566666667 0.0190878702354  (o similar)
+	dtc.fit(X_train, y_train)
+
+	# s = pickle.dumps(dtc)
+	# clf2 = pickle.loads(s)
+	# clf2.predict(X_test)
+	
+	print("Test set mean accuracy:", dtc.score(X_test,y_test))
+
+	if BEGIN_COMPETITION:
+
+		predict_txt = json.load(open('dataset_dev/predict.json'))
+
+		p_df = pd.DataFrame(predict_txt, columns=['text'])
+
+		buildFeaturesFromData(p_df)
+
+		X_predict = p_df[select_cols].values
+
+		predictions = dtc.predict(X_predict)
+
+		for p in predictions:
+			print(p)
 
 	# print("Naive Bayes with Gaussian probabilities")
 	# gnb = GaussianNB()
-	# res = cross_val_score(gnb, X, y, cv=10)
+	# res = cross_val_score(gnb, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
 
 	# print("K Nearest Neighbours") # creo que no tiene sentido
 	# neigh = KNeighborsClassifier(n_neighbors=5)
-	# res = cross_val_score(neigh, X, y, cv=10)
+	# res = cross_val_score(neigh, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
 
 	# print("Support Vector Machine (SVM)") # no tiene sentido
 	# svc = svm.SVC()
-	# res = cross_val_score(svc, X, y, cv=10)
+	# res = cross_val_score(svc, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
 
 	# print("Random Forest Classifier")
 	# rf = RandomForestClassifier(n_estimators=100)
-	# res = cross_val_score(rf, X, y, cv=10)
+	# res = cross_val_score(rf, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
 
 	# Model selection and evaluation using tools, such as grid_search.GridSearchCV and 
