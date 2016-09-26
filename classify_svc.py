@@ -212,16 +212,7 @@ def buildFeaturesFromData(df, rebuild = True):
 		features = getAttributesByFrequency(df)
 	else:
 		# these are attributes we gathered using getAttributesByFrequency. we pre-calculate them to avoid having to wait every run.
-		features = ['please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
-		'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
-		'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
-		'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
-		'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
-		'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
-		'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
-		'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
-		'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
-		'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars', 'offere', 'OFFER', 'Nigeria', 'nigeria', 'pills', 'discount']
+		features = ['viagra', 'offer', 'sex', 'discount', 'prince', 'nigeria']
 
 	# print(features)
 
