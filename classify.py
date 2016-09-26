@@ -22,10 +22,24 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectPercentile, f_classif, SelectFromModel, chi2, SelectKBest
+from sklearn.svm import LinearSVC
 import pickle # model persistance
 import sklearn.metrics
 from matplotlib import pyplot as plt
+import time
 # import validators
+
+class Timer(object):
+    def __init__(self, name=None):
+        self.name = name
+
+    def __enter__(self):
+        if self.name:
+            print(self.name),
+        self.tstart = time.time()
+    def __exit__(self, type, value, traceback):
+        print('Elapsed: %.2f seconds' % (time.time() - self.tstart))
 
 class MLStripper(HTMLParser):
 	def __init__(self):
@@ -255,8 +269,10 @@ if __name__=="__main__":
 
 	# in the future, we should be able to just save the model parameters
 	# instead of having to retrain the whole thing
-	buildFeaturesFromData(df,   False)
-	buildFeaturesFromData(test, False)
+	with Timer('Build Features From Train Data'):
+		buildFeaturesFromData(df,   False)
+	with Timer('Build Features From Test Data'):
+		buildFeaturesFromData(test, False)
 
 	# other proposed features:
 	# Contains characters other than UTF8?
@@ -280,16 +296,51 @@ if __name__=="__main__":
 	X_test  = test[select_cols].values
 	y_test = test['class']
 
+	# dimensionality reduction
+
+	# PCA (no encontré la forma de aplicarlo bien a nuestro caso)
+##	pca = PCA(n_components='mle')
+#	pca = PCA(n_components=100)
+#	X_train = pca.fit_transform(X_train)
+#	X_test = pca.transform(X_test)
+
+	# Feature selection
+
+	# Univariate feature selection¶ (no encontré mejoras incluso con percentil = 99 ni sacando solo un atributo)
+	selector = SelectPercentile(f_classif, percentile=90)
+	selector.fit(X_train, y_train)
+	X_train = selector.transform(X_train)
+	X_test = selector.transform(X_test)
+	
+#	selector = SelectKBest(f_classif, k=116)
+#	selector.fit(X_train, y_train)
+#	X_train = selector.transform(X_train)
+#	X_test = selector.transform(X_test)
+#	
+#	# L1-based feature selection (tampoco encontré moejoras por ahora)
+#	lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X_train, y_train)
+#	model = SelectFromModel(lsvc, prefit=True)
+#	X_train = model.transform(X_train)
+#	X_test = model.transform(X_test)
+
+
 	# Ejecuto el clasificador entrenando con un esquema de cross validation
 	# de 10 folds.
-	print("Decision Tree Classifier")
-	dtc = DecisionTreeClassifier()
-	res = cross_val_score(dtc, X_train, y_train, cv=10)
+	with Timer('Decision Tree Classifier'):
+		dtc = DecisionTreeClassifier()
+		res = cross_val_score(dtc, X_train, y_train, cv=10)
 	print("Cross validation: ", np.mean(res), np.std(res))
-	clf = dtc.fit(X_train, y_train)
-	# s = pickle.dumps(dtc)
-	# clf2 = pickle.loads(s)
-	# clf2.predict(X_test)
+	# salida: 0.687566666667 0.0190878702354  (o similar)
+	with Timer('Decision Tree Classifier fit'):
+		dtc.fit(X_train, y_train)
+
+    # Save model
+	with open('modelo_dtc.pickle', 'wb') as f:
+		pickle.dump(dtc, f)
+		
+    # Load model
+	# with open('modelo_dtc.pickle', 'rb') as f:
+	# 	clf2 = pickle.load(f)
 	
 	print("Test set mean accuracy:", dtc.score(X_test,y_test))
 
@@ -346,22 +397,105 @@ if __name__=="__main__":
 		for p in predictions:
 			print(p)
 
-	# print("Naive Bayes with Gaussian probabilities")
-	# gnb = GaussianNB()
-	# res = cross_val_score(gnb, X_train, y_train, cv=10)
-	# print(np.mean(res), np.std(res))
 
-	# print("K Nearest Neighbours") # creo que no tiene sentido
-	# neigh = KNeighborsClassifier(n_neighbors=5)
-	# res = cross_val_score(neigh, X_train, y_train, cv=10)
-	# print(np.mean(res), np.std(res))
+	#NAIVE BAYES
+	print("NAIVE BAYES")
+	with Timer('Naive Bayes with Gaussian probabilities'):
+		gnb = GaussianNB()
+		res = cross_val_score(gnb, X_train, y_train, cv=10)
+		print(np.mean(res), np.std(res))
+	with open('modelo_gnb.pickle', 'wb') as f:
+		pickle.dump(gnb, f)
 
-	# print("Support Vector Machine (SVM)") # no tiene sentido
-	# svc = svm.SVC()
-	# res = cross_val_score(svc, X_train, y_train, cv=10)
-	# print(np.mean(res), np.std(res))
+	with Timer('Naive Bayes fit'):
+		gnb.fit(X_train, y_train)
+
+	print("Test set mean accuracy:", gnb.score(X_test,y_test))
+
+	predictions_test = gnb.predict(X_test)
 
 
+	y_test_list = list(y_test)
+
+	true_positives = 0
+	false_positives = 0
+	false_negatives = 0
+	true_negatives = 0
+
+	for p in range(len(predictions_test)):
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+			true_positives = true_positives + 1
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+			false_positives = false_positives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+			false_negatives = false_negatives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+			true_negatives = true_negatives + 1
+
+	print("false_positives: " + str(false_positives))
+	print("false_negatives: " + str(false_negatives))
+	print("true_positives: " + str(true_positives))
+	print("true_negatives: " + str(true_negatives))
+
+	print("precision: " + str(true_positives / (true_positives + false_positives)))
+	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+
+
+
+	#KNN
+	print("KNN")
+	with Timer('K Nearest Neighbours'): # creo que no tiene sentido
+		neigh = KNeighborsClassifier(n_neighbors=5)
+		res = cross_val_score(neigh, X_train, y_train, cv=10)
+		print(np.mean(res), np.std(res))
+	with open('modelo_knn.pickle', 'wb') as f:
+		pickle.dump(knn, f)
+
+
+	with Timer('KNN fit'):
+		neigh.fit(X_train, y_train)
+
+	print("Test set mean accuracy:", neigh.score(X_test,y_test))
+
+	predictions_test = neigh.predict(X_test)
+
+
+	y_test_list = list(y_test)
+
+	true_positives = 0
+	false_positives = 0
+	false_negatives = 0
+	true_negatives = 0
+
+	for p in range(len(predictions_test)):
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+			true_positives = true_positives + 1
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+			false_positives = false_positives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+			false_negatives = false_negatives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+			true_negatives = true_negatives + 1
+
+	print("false_positives: " + str(false_positives))
+	print("false_negatives: " + str(false_negatives))
+	print("true_positives: " + str(true_positives))
+	print("true_negatives: " + str(true_negatives))
+
+	print("precision: " + str(true_positives / (true_positives + false_positives)))
+	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+
+#	with Timer('Support Vector Machine (SVM)'): # no tiene sentido
+#		svc = svm.SVC()
+#		res = cross_val_score(svc, X_train, y_train, cv=10)
+#	print(np.mean(res), np.std(res))
+
+	with Timer('Random Forest Classifier'):
+		rf = RandomForestClassifier(n_estimators=100)
+		res = cross_val_score(rf, X_train, y_train, cv=10)
+	print(np.mean(res), np.std(res))
+	with open('modelo_rf.pickle', 'wb') as f:
+		pickle.dump(dtc, f)
 
 	# Model selection and evaluation using tools, such as grid_search.GridSearchCV and 
 	# cross_validation.cross_val_score, take a scoring parameter that controls what metric they apply to the estimators evaluated.
