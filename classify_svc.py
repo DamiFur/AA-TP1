@@ -23,8 +23,6 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
 from sklearn.ensemble import RandomForestClassifier
 import pickle # model persistance
-import sklearn.metrics
-from matplotlib import pyplot as plt
 # import validators
 
 class MLStripper(HTMLParser):
@@ -282,19 +280,32 @@ if __name__=="__main__":
 
 	# Ejecuto el clasificador entrenando con un esquema de cross validation
 	# de 10 folds.
-	print("Decision Tree Classifier")
-	dtc = DecisionTreeClassifier()
-	res = cross_val_score(dtc, X_train, y_train, cv=10)
-	print("Cross validation: ", np.mean(res), np.std(res))
-	clf = dtc.fit(X_train, y_train)
+	# print("Decision Tree Classifier")
+	# dtc = DecisionTreeClassifier()
+	# res = cross_val_score(dtc, X_train, y_train, cv=10)
+	# print("Cross validation: ", np.mean(res), np.std(res))
+	# # salida: 0.687566666667 0.0190878702354  (o similar)
+	# dtc.fit(X_train, y_train)
+
 	# s = pickle.dumps(dtc)
 	# clf2 = pickle.loads(s)
 	# clf2.predict(X_test)
 	
-	print("Test set mean accuracy:", dtc.score(X_test,y_test))
+	# print("Test set mean accuracy:", dtc.score(X_test,y_test))
 
-	predictions_test = dtc.predict(X_test)
+	# predictions_test = dtc.predict(X_test)
 
+	# for p in predictions_test:
+	# 	print(p)
+
+	print("Support Vector Machine (SVM)") # no tiene sentido
+	svc = svm.SVC()
+	res = cross_val_score(svc, X_train, y_train, cv=10)
+	print(np.mean(res), np.std(res))
+	svc.fit(X_train, y_train)
+
+	print("Test mean accuracy:", svc.score(X_test, y_test))
+	predictions_test = svc.predict(X_test)
 
 	y_test_list = list(y_test)
 
@@ -321,15 +332,13 @@ if __name__=="__main__":
 	print("precision: " + str(true_positives / (true_positives + false_positives)))
 	print("recall: " + str(true_positives / (true_positives + false_negatives)))
 
-
-
-	# for p in range(len(predictions_test)):
-	# 	print(predictions_test[p])
-
 	# print("Random Forest Classifier")
 	# rf = RandomForestClassifier(n_estimators=100)
 	# res = cross_val_score(rf, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
+	# rf.fit(X_train, y_train)
+
+
 
 	if BEGIN_COMPETITION:
 
@@ -356,10 +365,7 @@ if __name__=="__main__":
 	# res = cross_val_score(neigh, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
 
-	# print("Support Vector Machine (SVM)") # no tiene sentido
-	# svc = svm.SVC()
-	# res = cross_val_score(svc, X_train, y_train, cv=10)
-	# print(np.mean(res), np.std(res))
+
 
 
 
