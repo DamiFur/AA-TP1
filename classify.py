@@ -449,7 +449,7 @@ if __name__=="__main__":
 		res = cross_val_score(neigh, X_train, y_train, cv=10)
 		print(np.mean(res), np.std(res))
 	with open('modelo_knn.pickle', 'wb') as f:
-		pickle.dump(knn, f)
+		pickle.dump(neigh, f)
 
 
 	with Timer('KNN fit'):

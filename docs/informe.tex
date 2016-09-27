@@ -141,8 +141,14 @@ Luego de seleccionar los primeros atributos utilizando nuestra variacion de Bag 
 \begin{itemize}
 	\item has\_closing\_tags
 	\item has\_links
+	\item cant\_capital
+	\item capital_in_a_row
 	\item is\_multipart
 \end{itemize}
+
+Con estos atributos buscamos captar distintas propiedades frecuentes en los mails de spam: la presencia de links hacia páginas web de contenido malicioso o de spam, el formato HTML que otorga formato a cierta publicidad, la presencia de muchas palabras en mayúscula o títulos o subtítulos con varias letras con mayúsculas seguidas
+
+A su vez, a las palabras determinadas por el Bag of Words le agregamos varias palabras que consideramos de posible aparición frecuente en mails de spam, a saber: offer, sex, viagra, Nigeria, discount entre varias otras
 
 \subsection{Otras alternativas}
 
@@ -150,9 +156,79 @@ Utilizar NLP.
 
 \section{Modelos}
 
-Listar los algoritmos de aprendizaje elegidos para experimentar. Describir cualquier decisión que hayan tomado (p.ej., elección de hiperparámetros).
+Luego de definir nuestros atributos, probamos distintos modelos con el objetivo de evaluar su performance. Decidimos utilizar para nuestra comparación Naive Bayes, Decision Tree Classifier, Random Forest Classifier, Support Vector Machine y K Nearest Neighbours. Medimos para cada uno el tiempo de cómputo, \textit{accuracy}, \textit{precision} y \textit{recall}, además de calcular la cantidad de falsos y verdaderos casos positivos y negativos. Los resultados son los siguientes:
 
-Discutir por que pensamos que no tiene sentido hacer SVM o kNN.
+\textbf{Random Forest Classifier:}
+\begin{itemize}
+	\item Test mean accuracy: 0.953777777778
+	\item false positives: 169
+	\item false negatives: 247
+	\item true positives: 4187
+	\item true negatives: 4397
+	\item precision: 0.9612029384756657
+	\item recall: 0.9442940911141182
+	\item tiempo de cómputo: 272.41 segundos
+\end{itemize}
+
+\textbf{Decision Tree Classifier:}
+\begin{itemize}
+	\item Test mean accuracy: 0.920444444444
+	\item false positives: 354
+	\item false negatives: 362
+	\item true positives:  4086
+	\item true negatives:  4198
+	\item precision: 0.9202702702702703
+	\item recall: 0.9186151079136691
+	\item tiempo de cómputo: 34.48 segundos
+\end{itemize}
+
+\textbf{Support Vector Machine:}
+\begin{itemize}
+	\item Test mean accuracy: 0.793333333333
+	\item false positives: 400
+	\item false negatives: 1460
+	\item true positives:  3017
+	\item true negatives:  4123
+	\item precision: 0.8829382499268364
+	\item recall: 0.6738887647978558
+	\item tiempo de cómputo: 2:17:00 hs
+\end{itemize}
+
+\textbf{Naive Bayes with Gaussian Probabilities:}
+\begin{itemize}
+	\item Test mean accuracy: 0.805888888889
+	\item false positives: 1321
+	\item false negatives: 426
+	\item true positives:  4100
+	\item true negatives:  3153
+	\item precision: 0.7563180225050729
+	\item recall: 0.9058771542200619
+	\item tiempo de cómputo: 0.32 segundos
+\end{itemize}
+
+\textbf{kNN:}
+\begin{itemize}
+	\item Test mean accuracy: 0.871444444444
+	\item false positives: 762
+	\item false negatives: 395
+	\item true positives:  4131
+	\item true negatives:  3712
+	\item precision: 0.8442673206621705
+	\item recall: 0.912726469288555
+	\item tiempo de cómputo: 1181.95 segundos
+\end{itemize}
+
+
+Donde 'Test mean accuracy' es el promedio calculado a partir de la K-Folding Cross Validation con K = 10.
+
+A su vez, vale considerar que para correr SVM quitamos 90 parámetros calculados mediante Bag of Words debido a que la complejidad del algoritmo depende de éstos y al correr este clasificador con la misma cantidad de parámetros con los que corrimos los otros modelos el tiempo de cómputo se volvía inmenso, lo cual lo descartaba en la práctica como un método de clasificación útil
+
+Como una primera conclusión de este experimento observamos que los mejores resultados se obtienen con los modelos más 'sencillos', mientras que los modelos que requieren mayor cómputo como kNN o SVM arrojan peores resultados.
+Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos, propiedad que nos interesa destacar al armar un clasificador de Spam
+
+% Listar los algoritmos de aprendizaje elegidos para experimentar. Describir cualquier decisión que hayan tomado (p.ej., elección de hiperparámetros).
+
+% Discutir por que pensamos que no tiene sentido hacer SVM o kNN.
 
 \subsection{Logistic Regression}
 \subsection{Naive Bayes}
