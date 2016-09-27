@@ -21,7 +21,7 @@ from sklearn.feature_extraction.text import CountVectorizer # Bag of words
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn import svm
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.feature_selection import SelectPercentile, f_classif, SelectFromModel, chi2, SelectKBest
 from sklearn.svm import LinearSVC
 import pickle # model persistance
@@ -237,7 +237,7 @@ def buildFeaturesFromData(df, rebuild = True):
 		'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
 		'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
 		'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
-		'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars', 'offere', 'OFFER', 'Nigeria', 'nigeria', 'pills', 'discount']
+		'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars', 'offere','offered','offer', 'OFFER', 'Nigeria', 'nigeria', 'pills', 'discount']
 
 	# print(features)
 
@@ -307,10 +307,10 @@ if __name__=="__main__":
 	# Feature selection
 
 	# Univariate feature selection¶ (no encontré mejoras incluso con percentil = 99 ni sacando solo un atributo)
-	selector = SelectPercentile(f_classif, percentile=90)
-	selector.fit(X_train, y_train)
-	X_train = selector.transform(X_train)
-	X_test = selector.transform(X_test)
+#	selector = SelectPercentile(f_classif, percentile=90)
+#	selector.fit(X_train, y_train)
+#	X_train = selector.transform(X_train)
+#	X_test = selector.transform(X_test)
 	
 #	selector = SelectKBest(f_classif, k=116)
 #	selector.fit(X_train, y_train)
@@ -345,8 +345,11 @@ if __name__=="__main__":
 	print("Test set mean accuracy:", dtc.score(X_test,y_test))
 
 	predictions_test = dtc.predict(X_test)
-
-
+	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	
+	predictions_test_all_but_rf = predictions_test
+	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))
+	
 	y_test_list = list(y_test)
 
 	true_positives = 0
@@ -413,7 +416,8 @@ if __name__=="__main__":
 	print("Test set mean accuracy:", gnb.score(X_test,y_test))
 
 	predictions_test = gnb.predict(X_test)
-
+	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
 
 	y_test_list = list(y_test)
 
@@ -458,7 +462,8 @@ if __name__=="__main__":
 	print("Test set mean accuracy:", neigh.score(X_test,y_test))
 
 	predictions_test = neigh.predict(X_test)
-
+	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
 
 	y_test_list = list(y_test)
 
@@ -490,12 +495,127 @@ if __name__=="__main__":
 #		res = cross_val_score(svc, X_train, y_train, cv=10)
 #	print(np.mean(res), np.std(res))
 
+	# AdaBoost
+	with Timer('AdaBoost Classifier'):
+		ada = AdaBoostClassifier(n_estimators=100)
+		res = cross_val_score(ada, X_train, y_train, cv=10)
+	print(np.mean(res), np.std(res))
+	with open('modelo_ada.pickle', 'wb') as f:
+		pickle.dump(ada, f)
+		
+	with Timer('AdaBoost fit'):
+		ada.fit(X_train, y_train)
+
+	print("Test set mean accuracy:", ada.score(X_test,y_test))
+
+	predictions_test = ada.predict(X_test)
+	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
+
+	y_test_list = list(y_test)
+
+	true_positives = 0
+	false_positives = 0
+	false_negatives = 0
+	true_negatives = 0
+
+	for p in range(len(predictions_test)):
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+			true_positives = true_positives + 1
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+			false_positives = false_positives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+			false_negatives = false_negatives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+			true_negatives = true_negatives + 1
+
+	print("false_positives: " + str(false_positives))
+	print("false_negatives: " + str(false_negatives))
+	print("true_positives: " + str(true_positives))
+	print("true_negatives: " + str(true_negatives))
+
+	print("precision: " + str(true_positives / (true_positives + false_positives)))
+	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+
+
+	# RANDOM FOREST
 	with Timer('Random Forest Classifier'):
 		rf = RandomForestClassifier(n_estimators=100)
 		res = cross_val_score(rf, X_train, y_train, cv=10)
 	print(np.mean(res), np.std(res))
 	with open('modelo_rf.pickle', 'wb') as f:
-		pickle.dump(dtc, f)
+		pickle.dump(rf, f)
+		
+	with Timer('Random Forest fit'):
+		rf.fit(X_train, y_train)
+
+	print("Test set mean accuracy:", rf.score(X_test,y_test))
+
+	predictions_test = rf.predict(X_test)
+
+	y_test_list = list(y_test)
+
+	true_positives = 0
+	false_positives = 0
+	false_negatives = 0
+	true_negatives = 0
+
+	for p in range(len(predictions_test)):
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+			true_positives = true_positives + 1
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+			false_positives = false_positives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+			false_negatives = false_negatives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+			true_negatives = true_negatives + 1
+
+	print("false_positives: " + str(false_positives))
+	print("false_negatives: " + str(false_negatives))
+	print("true_positives: " + str(true_positives))
+	print("true_negatives: " + str(true_negatives))
+
+	print("precision: " + str(true_positives / (true_positives + false_positives)))
+	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+
+
+
+	# MINIMIZACIÓN DE FALSOS POSITIVOS
+
+	# Si los modelos distintos a random fores (que es el que mejor
+	# resultados nos da) predice 'ham', modificamos la predicción de
+	# random fores para que sea 'ham'. De esta forma vamos a minimizar
+	# los falsos positivos.
+
+	with Timer('Minimize false positives'):
+		
+		for p in range(len(predictions_test)):
+			if (predictions_test_all_but_rf[p,:] == 'ham').any():
+				predictions_test[p] = 'ham'
+	
+	true_positives = 0
+	false_positives = 0
+	false_negatives = 0
+	true_negatives = 0
+
+	for p in range(len(predictions_test)):
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+			true_positives = true_positives + 1
+		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+			false_positives = false_positives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+			false_negatives = false_negatives + 1
+		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+			true_negatives = true_negatives + 1
+
+	print("false_positives: " + str(false_positives))
+	print("false_negatives: " + str(false_negatives))
+	print("true_positives: " + str(true_positives))
+	print("true_negatives: " + str(true_negatives))
+
+	print("precision: " + str(true_positives / (true_positives + false_positives)))
+	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+
 
 	# Model selection and evaluation using tools, such as grid_search.GridSearchCV and 
 	# cross_validation.cross_val_score, take a scoring parameter that controls what metric they apply to the estimators evaluated.
