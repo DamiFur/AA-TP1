@@ -62,9 +62,9 @@ def strip_tags(html):
 	s.feed(html)
 	return s.get_data()
 
-def removeNonAsciiChars(str):
-	printable = set(string.printable)
-	return filter(lambda x: x in printable, str)
+# def removeNonAsciiChars(str):
+# 	printable = set(string.printable)
+# 	return filter(lambda x: x in printable, str)
 
 def to_ascii(txt):
 	txt = txt.encode('ascii',errors='ignore')
@@ -85,7 +85,21 @@ def getEmailBodyFromMime(mime):
 
 	return body
 
-def getAttributesByFrequency(df):
+def getEmailTitleFromMime(s):
+	first = 'subject:'
+	last  = '\n'
+
+	s_orig = s
+	s = s.lower()
+
+	try:
+		start = s.index( first ) + len( first )
+		end = s.index( last, start )
+		return to_ascii(s_orig[start:end]).strip().replace(".", "").replace("-", "")
+	except ValueError:
+		return ''
+
+def getAttributesByFrequency(df, text = 'mime_body'):
 
 	# bag of words: https://en.wikipedia.org/wiki/Bag-of-words_model
 
@@ -107,7 +121,7 @@ def getAttributesByFrequency(df):
 		msg_class = row['class']
 
 		# msg = getEmailBodyFromMime(row['text']) # remove non utf-8 chars
-		msg = row['mime_body']
+		msg = row[text]
 
 		def remove_characters(str, chars):
 			str = re.sub(r'^http.?:\/\/.*[\r\n]*', '', str, flags=re.MULTILINE)
@@ -152,8 +166,39 @@ def getAttributesByFrequency(df):
 
 	return words
 
+def count_capitals(str):
+	is_capital = re.compile('[A-Z]')
+	capitals = 0
+	for i in str:
+		if is_capital.match(i.replace('\n',' ')):
+			capitals = capitals + 1
+	return capitals
+
 # rebuild = True if features from data frequency must be rebuilt.
 def buildFeaturesFromData(df, rebuild = False):
+
+	df['title'] = list(map(getEmailTitleFromMime, df.text))
+
+	# for v in df['title']:
+	# 	print(v)
+
+	# getAttributesByFrequency(df, 'title')
+
+	df['title_caps'] = list(map(lambda text: count_capitals(text) / (len(text)+1), df.title))
+
+	df['strange_encoding'] = list(map(lambda x: '?iso' in x or '?utf' in x or '?koi8' in x, df.title))
+
+	df['len_title'] = list(map(lambda title: len(title), df.title))
+
+	features = ['pharmacy','cialis','viagra','best','free','1oo%','money','quality','gadgets','$','penis','cheap','sex','stock',
+	'hot','meds','best','free','cheap','best','here','draft','revised','schedule','access','deal','buy','phar','cialis','pro']
+
+
+	for feature in features:
+		df[feature+'_title'] = list(map(lambda mime_body: feature in mime_body.lower() or feature in mime_body.lower().replace("0", "o").replace("3", "e"), df.title))
+
+
+	df['title_length'] = list(map(len, df.title))
 
 	df['mime_body'] = list(map(getEmailBodyFromMime, df.text))
 
@@ -162,8 +207,7 @@ def buildFeaturesFromData(df, rebuild = False):
 	df['len'] = list(map(lambda mime_body: len(mime_body), df.mime_body))
 
 	# amount of spaces in email
-	def count_spaces(str): return str.count(" ")
-	df['count_spaces'] = list(map(count_spaces, df.mime_body))
+	df['count_spaces'] = list(map(lambda x: x.count(" "), df.mime_body))
 
 	# amount of closing tags in email
 	closing_tags = re.compile('.*</.*|.*/>.*')
@@ -185,16 +229,9 @@ def buildFeaturesFromData(df, rebuild = False):
 
 	df['has_links'] = list(map(has_links, df.mime_body))
 
-	is_capital = re.compile('[A-Z]')
-
-	def count_capitals(str):
-		capitals = 0
-		for i in str:
-			if is_capital.match(i.replace('\n',' ')):
-				capitals = capitals + 1
-		return capitals
-
 	df['q_capitals'] = list(map(count_capitals, df.mime_body))
+
+	is_capital = re.compile('[A-Z]')
 
 	def capitals_in_row(str):
 		cap_aux = 0
@@ -229,6 +266,8 @@ def buildFeaturesFromData(df, rebuild = False):
 
 	df['multipart'] = list(map(mime_multipart, df.text))
 
+	df['at'] = list(map(lambda x: x.count('@'), df.text))
+
 	if rebuild:
 		features = getAttributesByFrequency(df)
 	else:
@@ -248,7 +287,7 @@ def buildFeaturesFromData(df, rebuild = False):
 
 	# set extracted features by frequency
 	for feature in features:
-		df[feature] = list(map(lambda mime_body: feature in mime_body, df.mime_body))
+		df[feature] = list(map(lambda mime_body: feature in mime_body.lower(), df.mime_body))
 
 def performance_measure(predictions, actual_classes):
 
@@ -318,6 +357,7 @@ def begin_competition():
 		select_cols.remove('class')
 		select_cols.remove('text')
 		select_cols.remove('mime_body')	
+		select_cols.remove('title')
 
 		# print(df)
 		X = df[select_cols].values
@@ -343,6 +383,7 @@ def begin_competition():
 	# select_cols.remove('class')
 	select_cols.remove('text')
 	select_cols.remove('mime_body')	
+	select_cols.remove('title')
 
 	X_predict = p_df[select_cols].values
 	X_predict = pca.transform(X_predict) # build principal components
@@ -378,6 +419,10 @@ if __name__ == "__main__":
 	# build competition dataset to test
 	# test.to_json('dataset_dev/predict.json')
 
+	# print(list(map(getEmailTitleFromMime, df.text)))
+
+	# sys.exit(0)
+
 	# in the future, we should be able to just save the model parameters
 	# instead of having to retrain the whole thing
 	with Timer('Build Features From Train Data'):
@@ -396,9 +441,10 @@ if __name__ == "__main__":
 
 	# prepare data and train classifiers
 	select_cols = df.columns.tolist()
-	# select_cols.remove('class')
+	select_cols.remove('class')
 	select_cols.remove('text')
 	select_cols.remove('mime_body')	
+	select_cols.remove('title')
 
 	# print(df)
 	X_train = df[select_cols].values
@@ -436,12 +482,49 @@ if __name__ == "__main__":
 	# X_train = model.transform(X_train)
 	# X_test  = model.transform(X_test)
 
+	# Random Forest Classifier
+	with Timer('Random Forest Classifier'):
+		rf = RandomForestClassifier(n_estimators=150)
+		# res = cross_val_score(rf, X_train, y_train, cv=10)
+	# print("Cross validation: ", np.mean(res), np.std(res))
+	
+	with open('training/modelo_rf.pickle', 'wb') as f:
+		pickle.dump(rf, f)
+		
+	with Timer('Random Forest fit'):
+		rf.fit(X_train, y_train)
+
+	print("Test set mean accuracy:", rf.score(X_test,y_test))
+	predictions_test = rf.predict(X_test)
+	y_test_list = list(y_test)
+	print(performance_measure(predictions_test, y_test_list))
+
+	# AdaBoost
+	with Timer('AdaBoost Classifier'):
+		ada = AdaBoostClassifier(n_estimators=150)
+		# res = cross_val_score(ada, X_train, y_train, cv=10)
+	
+	# print("Cross validation: ", np.mean(res), np.std(res))
+		
+	with Timer('AdaBoost fit'):
+		ada.fit(X_train, y_train)
+
+	with open('training/modelo_ada.pickle', 'wb') as f:
+		pickle.dump(ada, f)
+
+	print("Test set mean accuracy:", ada.score(X_test,y_test))
+	predictions_test = ada.predict(X_test)
+	y_test_list = list(y_test)
+	print(performance_measure(predictions_test, y_test_list))
+
+	sys.exit(0)
+
 	# Training using 10 fold CV.
 	with Timer('Decision Tree Classifier'):
 		dtc = DecisionTreeClassifier()
-		res = cross_val_score(dtc, X_train, y_train, cv=10)
+		# res = cross_val_score(dtc, X_train, y_train, cv=10)
 
-	print("Cross validation: ", np.mean(res), np.std(res))
+	# print("Cross validation: ", np.mean(res), np.std(res))
 
 	with Timer('Decision Tree Classifier fit'):
 		dtc.fit(X_train, y_train)
@@ -455,29 +538,13 @@ if __name__ == "__main__":
 	y_test_list = list(y_test)
 	print(performance_measure(predictions_test, y_test_list))
 
-	# Random Forest Classifier
-	with Timer('Random Forest Classifier'):
-		rf = RandomForestClassifier(n_estimators=100)
-		res = cross_val_score(rf, X_train, y_train, cv=10)
-	print("Cross validation: ", np.mean(res), np.std(res))
-	
-	with open('training/modelo_rf.pickle', 'wb') as f:
-		pickle.dump(rf, f)
-		
-	with Timer('Random Forest fit'):
-		rf.fit(X_train, y_train)
-
-	print("Test set mean accuracy:", rf.score(X_test,y_test))
-	predictions_test = rf.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
 
 	# Naive Bayes
 	print("Naive Bayes")
 	with Timer('Naive Bayes with Gaussian probabilities'):
 		gnb = GaussianNB()
-		res = cross_val_score(gnb, X_train, y_train, cv=10)
-	print("Cross validation: ", np.mean(res), np.std(res))
+		# res = cross_val_score(gnb, X_train, y_train, cv=10)
+	# print("Cross validation: ", np.mean(res), np.std(res))
 
 	with open('training/modelo_gnb.pickle', 'wb') as f:
 		pickle.dump(gnb, f)
@@ -512,24 +579,6 @@ if __name__ == "__main__":
 	# 	svc = svm.SVC()
 	# 	res = cross_val_score(svc, X_train, y_train, cv=10)
 	# print(np.mean(res), np.std(res))
-
-	# AdaBoost
-	with Timer('AdaBoost Classifier'):
-		ada = AdaBoostClassifier(n_estimators=100)
-		res = cross_val_score(ada, X_train, y_train, cv=10)
-	
-	print("Cross validation: ", np.mean(res), np.std(res))
-		
-	with Timer('AdaBoost fit'):
-		ada.fit(X_train, y_train)
-
-	with open('training/modelo_ada.pickle', 'wb') as f:
-		pickle.dump(ada, f)
-
-	print("Test set mean accuracy:", ada.score(X_test,y_test))
-	predictions_test = ada.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
 
 	# Model selection and evaluation using tools, such as grid_search.GridSearchCV and 
 	# cross_validation.cross_val_score, take a scoring parameter that controls what metric they apply to the estimators evaluated.
