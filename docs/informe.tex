@@ -286,7 +286,9 @@ Se probó el uso de PCA como técnica de reducción de dimensionaidad y algunos 
 
  \section{Discusión}
 
-Los mejores resultados se obtuvieron con los métodos basádos en árboles, y en particular Random Forest, con el cual disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad consideramos que se debe priorizar al construir un clasificador de Spam. Mientras que otros métodos que requieren mayor cómputo, como kNN o SVM, no alcanzaron a tener la efectividad de otros más `sencillos'.
+Los mejores resultados se obtuvieron con los métodos basádos en árboles, y en particular Random Forest, con el cual disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad consideramos que se debe priorizar al construir un clasificador de Spam, y es por esto que fue elegido para la competencia. Mientras que otros métodos que requieren mayor cómputo, como kNN o SVM, no alcanzaron a tener la efectividad de otros más `sencillos'.
+
+Son interesantes algunas de las estrategias que emplean los spammers, como por ejemplo \emph{bayesian poisoning}, en la cual procuran emplear la información con la que se entrenan a los filtros de spam para disminuir su efectividad. Incluyen en sus mails spam palabras y otros features estadísticamente característicos de mails ham con el fin de aumentar las probabilidades de ser clasificados como ham. Por otro lado, si los filtros son entrenados con estos mails spam ``envenenados'', tenderá a aumentar la cantidad de falsos positivos.
 
 %En principio los mo
 %
