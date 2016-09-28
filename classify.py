@@ -326,54 +326,54 @@ if __name__=="__main__":
 
 	# Ejecuto el clasificador entrenando con un esquema de cross validation
 	# de 10 folds.
-	with Timer('Decision Tree Classifier'):
-		dtc = DecisionTreeClassifier()
-		res = cross_val_score(dtc, X_train, y_train, cv=10)
-	print("Cross validation: ", np.mean(res), np.std(res))
-	# salida: 0.687566666667 0.0190878702354  (o similar)
-	with Timer('Decision Tree Classifier fit'):
-		dtc.fit(X_train, y_train)
+	# with Timer('Decision Tree Classifier'):
+	# 	dtc = DecisionTreeClassifier()
+	# 	res = cross_val_score(dtc, X_train, y_train, cv=10)
+	# print("Cross validation: ", np.mean(res), np.std(res))
+	# # salida: 0.687566666667 0.0190878702354  (o similar)
+	# with Timer('Decision Tree Classifier fit'):
+	# 	dtc.fit(X_train, y_train)
 
-    # Save model
-	with open('modelo_dtc.pickle', 'wb') as f:
-		pickle.dump(dtc, f)
+ #    # Save model
+	# with open('modelo_dtc.pickle', 'wb') as f:
+	# 	pickle.dump(dtc, f)
 		
-    # Load model
-	# with open('modelo_dtc.pickle', 'rb') as f:
-	# 	clf2 = pickle.load(f)
+ #    # Load model
+	# # with open('modelo_dtc.pickle', 'rb') as f:
+	# # 	clf2 = pickle.load(f)
 	
-	print("Test set mean accuracy:", dtc.score(X_test,y_test))
+	# print("Test set mean accuracy:", dtc.score(X_test,y_test))
 
-	predictions_test = dtc.predict(X_test)
-	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	# predictions_test = dtc.predict(X_test)
+	# predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
 	
-	predictions_test_all_but_rf = predictions_test
-	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))
+	# predictions_test_all_but_rf = predictions_test
+	# predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))
 	
-	y_test_list = list(y_test)
+	# y_test_list = list(y_test)
 
-	true_positives = 0
-	false_positives = 0
-	false_negatives = 0
-	true_negatives = 0
+	# true_positives = 0
+	# false_positives = 0
+	# false_negatives = 0
+	# true_negatives = 0
 
-	for p in range(len(predictions_test)):
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
-			true_positives = true_positives + 1
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
-			false_positives = false_positives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
-			false_negatives = false_negatives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
-			true_negatives = true_negatives + 1
+	# for p in range(len(predictions_test)):
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+	# 		true_positives = true_positives + 1
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+	# 		false_positives = false_positives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+	# 		false_negatives = false_negatives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+	# 		true_negatives = true_negatives + 1
 
-	print("false_positives: " + str(false_positives))
-	print("false_negatives: " + str(false_negatives))
-	print("true_positives: " + str(true_positives))
-	print("true_negatives: " + str(true_negatives))
+	# print("false_positives: " + str(false_positives))
+	# print("false_negatives: " + str(false_negatives))
+	# print("true_positives: " + str(true_positives))
+	# print("true_negatives: " + str(true_negatives))
 
-	print("precision: " + str(true_positives / (true_positives + false_positives)))
-	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+	# print("precision: " + str(true_positives / (true_positives + false_positives)))
+	# print("recall: " + str(true_positives / (true_positives + false_negatives)))
 
 
 
@@ -402,54 +402,54 @@ if __name__=="__main__":
 
 
 	#NAIVE BAYES
-	print("NAIVE BAYES")
-	with Timer('Naive Bayes with Gaussian probabilities'):
-		gnb = GaussianNB()
-		res = cross_val_score(gnb, X_train, y_train, cv=10)
-		print(np.mean(res), np.std(res))
-	with open('modelo_gnb.pickle', 'wb') as f:
-		pickle.dump(gnb, f)
+	# print("NAIVE BAYES")
+	# with Timer('Naive Bayes with Gaussian probabilities'):
+	# 	gnb = GaussianNB()
+	# 	res = cross_val_score(gnb, X_train, y_train, cv=10)
+	# 	print(np.mean(res), np.std(res))
+	# with open('modelo_gnb.pickle', 'wb') as f:
+	# 	pickle.dump(gnb, f)
 
-	with Timer('Naive Bayes fit'):
-		gnb.fit(X_train, y_train)
+	# with Timer('Naive Bayes fit'):
+	# 	gnb.fit(X_train, y_train)
 
-	print("Test set mean accuracy:", gnb.score(X_test,y_test))
+	# print("Test set mean accuracy:", gnb.score(X_test,y_test))
 
-	predictions_test = gnb.predict(X_test)
-	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
-	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
+	# predictions_test = gnb.predict(X_test)
+	# predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	# predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
 
-	y_test_list = list(y_test)
+	# y_test_list = list(y_test)
 
-	true_positives = 0
-	false_positives = 0
-	false_negatives = 0
-	true_negatives = 0
+	# true_positives = 0
+	# false_positives = 0
+	# false_negatives = 0
+	# true_negatives = 0
 
-	for p in range(len(predictions_test)):
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
-			true_positives = true_positives + 1
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
-			false_positives = false_positives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
-			false_negatives = false_negatives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
-			true_negatives = true_negatives + 1
+	# for p in range(len(predictions_test)):
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+	# 		true_positives = true_positives + 1
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+	# 		false_positives = false_positives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+	# 		false_negatives = false_negatives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+	# 		true_negatives = true_negatives + 1
 
-	print("false_positives: " + str(false_positives))
-	print("false_negatives: " + str(false_negatives))
-	print("true_positives: " + str(true_positives))
-	print("true_negatives: " + str(true_negatives))
+	# print("false_positives: " + str(false_positives))
+	# print("false_negatives: " + str(false_negatives))
+	# print("true_positives: " + str(true_positives))
+	# print("true_negatives: " + str(true_negatives))
 
-	print("precision: " + str(true_positives / (true_positives + false_positives)))
-	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+	# print("precision: " + str(true_positives / (true_positives + false_positives)))
+	# print("recall: " + str(true_positives / (true_positives + false_negatives)))
 
 
 
 	#KNN
 	print("KNN")
 	with Timer('K Nearest Neighbours'): # creo que no tiene sentido
-		neigh = KNeighborsClassifier(n_neighbors=5)
+		neigh = KNeighborsClassifier(n_neighbors=20)
 		res = cross_val_score(neigh, X_train, y_train, cv=10)
 		print(np.mean(res), np.std(res))
 	with open('modelo_knn.pickle', 'wb') as f:
@@ -462,8 +462,8 @@ if __name__=="__main__":
 	print("Test set mean accuracy:", neigh.score(X_test,y_test))
 
 	predictions_test = neigh.predict(X_test)
-	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
-	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
+	# predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	# predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
 
 	y_test_list = list(y_test)
 
@@ -496,87 +496,87 @@ if __name__=="__main__":
 #	print(np.mean(res), np.std(res))
 
 	# AdaBoost
-	with Timer('AdaBoost Classifier'):
-		ada = AdaBoostClassifier(n_estimators=100)
-		res = cross_val_score(ada, X_train, y_train, cv=10)
-	print(np.mean(res), np.std(res))
-	with open('modelo_ada.pickle', 'wb') as f:
-		pickle.dump(ada, f)
+	# with Timer('AdaBoost Classifier'):
+	# 	ada = AdaBoostClassifier(n_estimators=100)
+	# 	res = cross_val_score(ada, X_train, y_train, cv=10)
+	# print(np.mean(res), np.std(res))
+	# with open('modelo_ada.pickle', 'wb') as f:
+	# 	pickle.dump(ada, f)
 		
-	with Timer('AdaBoost fit'):
-		ada.fit(X_train, y_train)
+	# with Timer('AdaBoost fit'):
+	# 	ada.fit(X_train, y_train)
 
-	print("Test set mean accuracy:", ada.score(X_test,y_test))
+	# print("Test set mean accuracy:", ada.score(X_test,y_test))
 
-	predictions_test = ada.predict(X_test)
-	predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
-	predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
+	# predictions_test = ada.predict(X_test)
+	# predictions_test = np.reshape(predictions_test,(len(predictions_test),1))
+	# predictions_test_all_but_rf = np.hstack((predictions_test_all_but_rf, predictions_test))	
 
-	y_test_list = list(y_test)
+	# y_test_list = list(y_test)
 
-	true_positives = 0
-	false_positives = 0
-	false_negatives = 0
-	true_negatives = 0
+	# true_positives = 0
+	# false_positives = 0
+	# false_negatives = 0
+	# true_negatives = 0
 
-	for p in range(len(predictions_test)):
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
-			true_positives = true_positives + 1
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
-			false_positives = false_positives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
-			false_negatives = false_negatives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
-			true_negatives = true_negatives + 1
+	# for p in range(len(predictions_test)):
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+	# 		true_positives = true_positives + 1
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+	# 		false_positives = false_positives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+	# 		false_negatives = false_negatives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+	# 		true_negatives = true_negatives + 1
 
-	print("false_positives: " + str(false_positives))
-	print("false_negatives: " + str(false_negatives))
-	print("true_positives: " + str(true_positives))
-	print("true_negatives: " + str(true_negatives))
+	# print("false_positives: " + str(false_positives))
+	# print("false_negatives: " + str(false_negatives))
+	# print("true_positives: " + str(true_positives))
+	# print("true_negatives: " + str(true_negatives))
 
-	print("precision: " + str(true_positives / (true_positives + false_positives)))
-	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+	# print("precision: " + str(true_positives / (true_positives + false_positives)))
+	# print("recall: " + str(true_positives / (true_positives + false_negatives)))
 
 
-	# RANDOM FOREST
-	with Timer('Random Forest Classifier'):
-		rf = RandomForestClassifier(n_estimators=100)
-		res = cross_val_score(rf, X_train, y_train, cv=10)
-	print(np.mean(res), np.std(res))
-	with open('modelo_rf.pickle', 'wb') as f:
-		pickle.dump(rf, f)
+	# # RANDOM FOREST
+	# with Timer('Random Forest Classifier'):
+	# 	rf = RandomForestClassifier(n_estimators=100)
+	# 	res = cross_val_score(rf, X_train, y_train, cv=10)
+	# print(np.mean(res), np.std(res))
+	# with open('modelo_rf.pickle', 'wb') as f:
+	# 	pickle.dump(rf, f)
 		
-	with Timer('Random Forest fit'):
-		rf.fit(X_train, y_train)
+	# with Timer('Random Forest fit'):
+	# 	rf.fit(X_train, y_train)
 
-	print("Test set mean accuracy:", rf.score(X_test,y_test))
+	# print("Test set mean accuracy:", rf.score(X_test,y_test))
 
-	predictions_test = rf.predict(X_test)
+	# predictions_test = rf.predict(X_test)
 
-	y_test_list = list(y_test)
+	# y_test_list = list(y_test)
 
-	true_positives = 0
-	false_positives = 0
-	false_negatives = 0
-	true_negatives = 0
+	# true_positives = 0
+	# false_positives = 0
+	# false_negatives = 0
+	# true_negatives = 0
 
-	for p in range(len(predictions_test)):
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
-			true_positives = true_positives + 1
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
-			false_positives = false_positives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
-			false_negatives = false_negatives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
-			true_negatives = true_negatives + 1
+	# for p in range(len(predictions_test)):
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+	# 		true_positives = true_positives + 1
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+	# 		false_positives = false_positives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+	# 		false_negatives = false_negatives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+	# 		true_negatives = true_negatives + 1
 
-	print("false_positives: " + str(false_positives))
-	print("false_negatives: " + str(false_negatives))
-	print("true_positives: " + str(true_positives))
-	print("true_negatives: " + str(true_negatives))
+	# print("false_positives: " + str(false_positives))
+	# print("false_negatives: " + str(false_negatives))
+	# print("true_positives: " + str(true_positives))
+	# print("true_negatives: " + str(true_negatives))
 
-	print("precision: " + str(true_positives / (true_positives + false_positives)))
-	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+	# print("precision: " + str(true_positives / (true_positives + false_positives)))
+	# print("recall: " + str(true_positives / (true_positives + false_negatives)))
 
 
 
@@ -587,34 +587,34 @@ if __name__=="__main__":
 	# random fores para que sea 'ham'. De esta forma vamos a minimizar
 	# los falsos positivos.
 
-	with Timer('Minimize false positives'):
+	# with Timer('Minimize false positives'):
 		
-		for p in range(len(predictions_test)):
-			if (predictions_test_all_but_rf[p,:] == 'ham').any():
-				predictions_test[p] = 'ham'
+	# 	for p in range(len(predictions_test)):
+	# 		if (predictions_test_all_but_rf[p,:] == 'ham').any():
+	# 			predictions_test[p] = 'ham'
 	
-	true_positives = 0
-	false_positives = 0
-	false_negatives = 0
-	true_negatives = 0
+	# true_positives = 0
+	# false_positives = 0
+	# false_negatives = 0
+	# true_negatives = 0
 
-	for p in range(len(predictions_test)):
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
-			true_positives = true_positives + 1
-		if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
-			false_positives = false_positives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
-			false_negatives = false_negatives + 1
-		if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
-			true_negatives = true_negatives + 1
+	# for p in range(len(predictions_test)):
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'spam':
+	# 		true_positives = true_positives + 1
+	# 	if predictions_test[p] == 'spam' and y_test_list[p] == 'ham':
+	# 		false_positives = false_positives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'spam':
+	# 		false_negatives = false_negatives + 1
+	# 	if predictions_test[p] == 'ham' and y_test_list[p] == 'ham':
+	# 		true_negatives = true_negatives + 1
 
-	print("false_positives: " + str(false_positives))
-	print("false_negatives: " + str(false_negatives))
-	print("true_positives: " + str(true_positives))
-	print("true_negatives: " + str(true_negatives))
+	# print("false_positives: " + str(false_positives))
+	# print("false_negatives: " + str(false_negatives))
+	# print("true_positives: " + str(true_positives))
+	# print("true_negatives: " + str(true_negatives))
 
-	print("precision: " + str(true_positives / (true_positives + false_positives)))
-	print("recall: " + str(true_positives / (true_positives + false_negatives)))
+	# print("precision: " + str(true_positives / (true_positives + false_positives)))
+	# print("recall: " + str(true_positives / (true_positives + false_negatives)))
 
 
 	# Model selection and evaluation using tools, such as grid_search.GridSearchCV and 

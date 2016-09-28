@@ -213,18 +213,20 @@ def buildFeaturesFromData(df, rebuild = True):
 		features = getAttributesByFrequency(df)
 	else:
 		# these are attributes we gathered using getAttributesByFrequency. we pre-calculate them to avoid having to wait every run.
-		features = ['please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
-		'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
-		'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
-		'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
-		'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
-		'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
-		'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
-		'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
-		'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
-		'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars', 'offere', 'OFFER', 'Nigeria', 'nigeria', 'pills', 'discount']
+		features = ['daily', 'dollars', 'offere', 'OFFER', 'Nigeria', 'nigeria', 'pills', 'discount']
 
 	# print(features)
+
+	# 'please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
+	# 	'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
+	# 	'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
+	# 	'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
+	# 	'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
+	# 	'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
+	# 	'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
+	# 	'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
+	# 	'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
+	# 	'scheduled', 'management', 'capacity', 'market', 'bill', 'employees',
 
 	# set extracted features by frequency
 	for feature in features:
@@ -299,14 +301,16 @@ if __name__=="__main__":
 	# for p in predictions_test:
 	# 	print(p)
 
-	print("Random Forest Classifier")
-	rf = RandomForestClassifier(n_estimators=30)
-	res = cross_val_score(rf, X_train, y_train, cv=10)
-	print(np.mean(res), np.std(res))
-	rf.fit(X_train, y_train)
+	print("Naive Bayes")
 
-	print("Test mean accuracy:", rf.score(X_test, y_test))
-	predictions_test = rf.predict(X_test)
+	gnb = GaussianNB()
+	res = cross_val_score(gnb, X_train, y_train, cv=10)
+	print(np.mean(res), np.std(res))
+
+	gnb.fit(X_train, y_train)
+
+	print("Test set mean accuracy:", gnb.score(X_test,y_test))
+	predictions_test = gnb.predict(X_test)
 
 	y_test_list = list(y_test)
 

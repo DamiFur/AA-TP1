@@ -77,7 +77,7 @@
 \hline
 Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico        \\ \hline
 Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com \\ 
-Damián Furman & 	936/11                      & z \\
+Damián Furman & 	936/11                      & damian.a.furman@gmail.com \\
 Germán Abrevaya & y                      & x \\ \hline
 \end{tabular}
 \end{table}
@@ -142,7 +142,7 @@ Luego de seleccionar los primeros atributos utilizando nuestra variacion de Bag 
 	\item has\_closing\_tags
 	\item has\_links
 	\item cant\_capital
-	\item capital_in_a_row
+	\item capital\_in\_a\_row
 	\item is\_multipart
 \end{itemize}
 
@@ -224,30 +224,160 @@ Donde 'Test mean accuracy' es el promedio calculado a partir de la K-Folding Cro
 A su vez, vale considerar que para correr SVM quitamos 90 parámetros calculados mediante Bag of Words debido a que la complejidad del algoritmo depende de éstos y al correr este clasificador con la misma cantidad de parámetros con los que corrimos los otros modelos el tiempo de cómputo se volvía inmenso, lo cual lo descartaba en la práctica como un método de clasificación útil
 
 Como una primera conclusión de este experimento observamos que los mejores resultados se obtienen con los modelos más 'sencillos', mientras que los modelos que requieren mayor cómputo como kNN o SVM arrojan peores resultados.
-Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos, propiedad que nos interesa destacar al armar un clasificador de Spam
+Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad que nos interesa destacar al armar un clasificador de Spam
 
-% Listar los algoritmos de aprendizaje elegidos para experimentar. Describir cualquier decisión que hayan tomado (p.ej., elección de hiperparámetros).
-
-% Discutir por que pensamos que no tiene sentido hacer SVM o kNN.
-
-\subsection{Logistic Regression}
 \subsection{Naive Bayes}
-\subsection{Decision Tree Classifier}
+
+Naive Bayes tiene la interesante propiedad de dar resultados acpetables pagando un tiempo de cómputo mínimo (tarda 0.32 segundos en clasificar el corpus de texto completo compuesto por 9 mil mails). Sin embargo, sus resultados no son aceptables en términos de un clasificador real. Principalmente porque si bien logra un \textit{accuracy} de un 80\%, genera una gran cantidad de falsos positivos en relación a los falsos negativos (\textit{recall} es de un 90\% mientras que \textit{precision} es de un 75\%). Naive Bayes considera cada uno de los atributos como un factor independiente de los otros atributos que aporta 'probabilisticamente' a la decisión sobre la clasificación de un elemento. Por esto decidimos quitar varios de sus atributos e ir agregándoselos por partes para de esta manera comprobar cómo varían los resultados obtenidos.
+
+\textbf{10 Atributos:}
+\begin{itemize}
+	\item Test mean accuracy: 0.49
+	\item false positives: 4465
+	\item false negatives: 125
+	\item true positives:  4266
+	\item true negatives:  144
+	\item precision: 0.4886038254495476
+	\item recall: 0.9715326804828057
+\end{itemize}
+
+\textbf{65 Atributos:}
+\begin{itemize}
+	\item Test mean accuracy: 0.616222222222
+	\item false positives: 3269
+	\item false negatives: 185
+	\item true positives:  4285
+	\item true negatives:  1261
+	\item precision: 0.5672491395287265
+	\item recall: 0.9586129753914989
+\end{itemize}
+\textbf{130 Atributos:}
+\begin{itemize}
+	\item Test mean accuracy: 0.805888888889
+	\item false positives: 1321
+	\item false negatives: 426
+	\item true positives:  4100
+	\item true negatives:  3153
+	\item precision: 0.7563180225050729
+	\item recall: 0.9058771542200619
+\end{itemize}
+
+Lo primero que podemos observar es que el clasificador Naive Bayes es muy sensible a la cantidad de atributos: parecería mejorar invariablemente en la medida que se agregan más. Esto sucede debido a que como cada atributo se considera independiente del resto y aporta una 'porción' de la probabilidad, al agregar más atributos la probabilidad total debería estar más afinada. Por otro lado, Naive Bayes no distingue distintas importancias entre los atributos, por lo que la efectividad de éste método también está supeditada a que la elección de los atributos que se agregan sea correcta.
+
+Otra observación que puede realizarse es que cuando el clasificador no tiene suficiente cantidad de atributos tiende a clasificar todo en la misma categoría. En el caso de nuestra experiencia puede verse como con 10 atributos casi todos los mails fueron clasificados como Spam, lo cual genera que la métrica de \textit{precisión} sea bajísima mientras que el \textit{recall} tiene valores muy altos.
+
+
 \subsection{Random Forests}
-\subsection{Bagging}
-\subsection{Stacking}
 
-\section{Reducción de dimensionalidad}
+Debido a nuestros primeros resultados obtenidos al comparar distintos modelos, decidimos realizar varias pruebas con el clasificador Random Forest variando uno de sus hiperparámetros más importantes: la cantidad de árboles a utilizar. Mientras que en nuestra primera experiencia utilizamos 100 árboles, decidimos observar los resultados de aplicar el clasificador al mismo corpus pero con 50, 30, 150 y 200 árboles para observar cómo afectan los resultados en términos de predicción.
 
-Describir brevemente las técnicas empleadas. PCA y penalidades.
+\textbf{30 Árboles:}
+\begin{itemize}
+	\item Test mean accuracy: 0.951777777778
+	\item false positives: 150
+	\item false negatives: 284
+	\item true positives:  4256
+	\item true negatives:  4310
+	\item precision: 0.9659555152065366
+	\item recall: 0.9374449339207048
+\end{itemize}
 
-\section{Resultados}
-Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
+\textbf{50 Árboles:}
+\begin{itemize}
+	\item Test mean accuracy: 0.952111111111
+	\item false positives: 155
+	\item false negatives: 276
+	\item true positives:  4296
+	\item true negatives:  4123
+	\item precision: 0.9651763648618288
+	\item recall: 0.9396325459317585
+\end{itemize}
+
+\textbf{150 Árboles:}
+\begin{itemize}
+	\item Test mean accuracy: 0.956555555556
+	\item false positives: 144
+	\item false negatives: 247
+	\item true positives:  4256
+	\item true negatives:  4353
+	\item precision: 0.9672727272727273
+	\item recall: 0.9451476793248945
+\end{itemize}
+
+\textbf{200 Árboles}
+\begin{itemize}
+	\item Test mean accuracy: 0.952888888889
+	\item false positives: 158
+	\item false negatives: 266
+	\item true positives:  4247
+	\item true negatives:  4329
+	\item precision: 0.9641316685584563
+	\item recall: 0.9410591624196765
+\end{itemize}
+
+En primer lugar se puede observar que disminuir la cantidad de árboles empeora la \textit{accuracy} aunque su variación es realmente mínima (0,2\%). Aumentar la cantidad de árboles, por otro lado, la aumenta, aunque también la diferencia es despreciable (0,2\% también). El principal efecto que parece generar tanto si reducimos la cantidad de árboles como si los aumentamos es ampliar la brecha entre \textit{precision} y \textit{recall}, aumentando un poco más significativamente (0,5\%) la \textit{precision}. Es decir, disminuye la cantidad de falsos positivos. Este cambio mejora el clasificador en términos de un clasificador de Spam.
+A su vez, casi no se observan diferencias entre los resultados obtenidos con 150 y 200 árboles ni tampoco entre los resultados obtenidos con 30 o 50. Aún así, el hiperparámetro que mejor resultado obtuvo es al correr Random Forest con 150 árboles el cuál minimiza la cantidad de falsos positivos.
+La conclusión de esta experiencia, sin embargo, parecería ser que la cantida de árboles del Random Forest no es un factor determinante a la hora de evaluar su eficiencia.
 
 
-\section{Discusión}
+\subsection{kNN:}
 
-Analizar los resultados, buscando responder cuestiones como, por ejemplo: ¿cuáles son los atributos encontrados con mayor poder predictivo?, ¿cuán sensibles fueron los algoritmos a las técnicas de reducción de dimensionalidad consideradas?, ¿resultó clara la elección del algoritmo para la competencia, o hubo que poner en la balanza distintos factores?
+Para K Nearest Neigbours consideramos intentar mejorar los resultados a partir de variar los k vecinos considerados. Mientras que en nuestra experiencia utilizamos un k = 5, testeamos los resultados de aplicar un k = 10 y k = 20
+
+\textbf{K = 5:}
+\begin{itemize}
+	\item Test mean accuracy: 0.871444444444
+	\item false positives: 762
+	\item false negatives: 395
+	\item true positives:  4131
+	\item true negatives:  3712
+	\item precision: 0.8442673206621705
+	\item recall: 0.912726469288555
+\end{itemize}
+
+\textbf{K = 10:}
+\begin{itemize}
+	\item Test mean accuracy: 0.812666666667
+	\item false positives: 686
+	\item false negatives: 1000
+	\item true positives:  3468
+	\item true negatives:  3846
+	\item precision: 0.8348579682233991
+	\item recall: 0.7761862130707251
+\end{itemize}
+\textbf{K = 20:}
+\begin{itemize}
+	\item Test mean accuracy: 0.794888888889
+	\item false positives: 758
+	\item false negatives: 1088
+	\item true positives:  3444
+	\item true negatives:  3710
+	\item precision: 0.8196097096620657
+	\item recall: 0.7599293909973521
+\end{itemize}
+
+Podemos observar que en la medida que aumenta el k, los resultados son peores. Esto se explica debido a que estamos permitiendo votar a más cantidad de 'vecinos' que se encuentran más lejos dentro del hiperplano con respecto a la coordenada en la que se evaluó el mail que queremos clasificar utilizando los parametros dados. Si bien un k muy bajo corre el peligro de que el único criterio de clasificación provenga de un \textit{outlyer}, un k muy alto difumina la idea del método kNN que es, a saber, clasificar nuestro corpus en base a la cercanía respecto al corpus que utilizamos como entrenamiento.
+
+
+
+% \subsection{Logistic Regression}
+
+
+
+% \subsection{Bagging}
+% \subsection{Stacking}
+
+% \section{Reducción de dimensionalidad}
+
+% Describir brevemente las técnicas empleadas. PCA y penalidades.
+
+% \section{Resultados}
+% Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
+
+
+% \section{Discusión}
+
+% Analizar los resultados, buscando responder cuestiones como, por ejemplo: ¿cuáles son los atributos encontrados con mayor poder predictivo?, ¿cuán sensibles fueron los algoritmos a las técnicas de reducción de dimensionalidad consideradas?, ¿resultó clara la elección del algoritmo para la competencia, o hubo que poner en la balanza distintos factores?
 
 
 \end{document}

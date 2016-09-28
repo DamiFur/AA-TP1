@@ -300,7 +300,7 @@ if __name__=="__main__":
 	# 	print(p)
 
 	print("Random Forest Classifier")
-	rf = RandomForestClassifier(n_estimators=30)
+	rf = RandomForestClassifier(n_estimators=200)
 	res = cross_val_score(rf, X_train, y_train, cv=10)
 	print(np.mean(res), np.std(res))
 	rf.fit(X_train, y_train)
