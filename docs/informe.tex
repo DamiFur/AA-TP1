@@ -278,7 +278,7 @@ Podemos observar que en la medida que aumenta el k, los resultados son peores. E
 
  \section{Reducción de dimensionalidad}
 
-% Describir brevemente las técnicas empleadas. PCA y penalidades.
+Se probó el uso de PCA como técnica de reducción de dimensionaidad y algunos selectores de features, basados en test estadísticos univariados. Para ambos casos se vió que la eficiencia, en cuanto a accuracy, precision y recall, disminuía sin importar con cuantos features nos quedasemos. Sin embargo creemos que aplicando la reducción de dimensionalidad o el selector de features se disminuye el overfitting por usar features muy correlacionadas. Terminamos por elegir aplicar PCA antes de entrenar los modelos, ya que lo consideramos más robusto que el selector de features.
 
 % \section{Resultados}
 % Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
@@ -286,17 +286,19 @@ Podemos observar que en la medida que aumenta el k, los resultados son peores. E
 
  \section{Discusión}
 
-[RECORTADO DE PARTES QUE ESCRIBIO DAMIAN]
-[COMPLETAR]
+Los mejores resultados se obtuvieron con los métodos basádos en árboles, y en particular Random Forest, con el cual disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad consideramos que se debe priorizar al construir un clasificador de Spam. Mientras que otros métodos que requieren mayor cómputo, como kNN o SVM, no alcanzaron a tener la efectividad de otros más `sencillos'.
 
-%https://en.wikipedia.org/wiki/Bayesian_poisoning
-
-%https://www.microsoft.com/en-us/research/publication/why-do-nigerian-scammers-say-they-are-from-nigeria/
-
-Como una primera conclusión de este experimento observamos que los mejores resultados se obtienen con los modelos más 'sencillos', mientras que los modelos que requieren mayor cómputo como kNN o SVM arrojan peores resultados.
-Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad que nos interesa destacar al armar un clasificador de Spam
-
-La conclusión de esta experiencia, sin embargo, parecería ser que la cantidad de árboles del Random Forest no es un factor determinante a la hora de evaluar su eficiencia.
+%En principio los mo
+%
+%
+%%https://en.wikipedia.org/wiki/Bayesian_poisoning
+%
+%%https://www.microsoft.com/en-us/research/publication/why-do-nigerian-scammers-say-they-are-from-nigeria/
+%
+%Como una primera conclusión de este experimento observamos que los mejores resultados se obtienen con los modelos más 'sencillos', mientras que los modelos que requieren mayor cómputo como kNN o SVM arrojan peores resultados.
+%Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad que nos interesa destacar al armar un clasificador de Spam
+%
+%La conclusión de esta experiencia, sin embargo, parecería ser que la cantidad de árboles del Random Forest no es un factor determinante a la hora de evaluar su eficiencia.
 
 % Analizar los resultados, buscando responder cuestiones como, por ejemplo: ¿cuáles son los atributos encontrados con mayor poder predictivo?, ¿cuán sensibles fueron los algoritmos a las técnicas de reducción de dimensionalidad consideradas?, ¿resultó clara la elección del algoritmo para la competencia, o hubo que poner en la balanza distintos factores?
 
