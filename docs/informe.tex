@@ -73,12 +73,12 @@
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|l l l|}
+\begin{tabular}{|l l l l|}
 \hline
-Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico        \\ \hline
-Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com \\ 
-Damián Furman & 	936/11                      & damian.a.furman@gmail.com \\
-Germán Abrevaya & y                      & x \\ \hline
+Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico       	& Carrera \\ \hline
+Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com & computación (licenciatura) \\ 
+Damián Furman & \multicolumn{1}{c}{936/11}& damian.a.furman@gmail.com & computación (licenciatura)\\
+Germán Abrevaya & \multicolumn{1}{c}{-} & germanabrevaya@gmail.com & física (doctorado)\\ \hline
 \end{tabular}
 \end{table}
 
@@ -150,117 +150,72 @@ Con estos atributos buscamos captar distintas propiedades frecuentes en los mail
 
 A su vez, a las palabras determinadas por el Bag of Words le agregamos varias palabras que consideramos de posible aparición frecuente en mails de spam, a saber: offer, sex, viagra, Nigeria, discount entre varias otras
 
-\subsection{Otras alternativas}
-
-Utilizar NLP.
-
 \section{Modelos}
 
-Luego de definir nuestros atributos, probamos distintos modelos con el objetivo de evaluar su performance. Decidimos utilizar para nuestra comparación Naive Bayes, Decision Tree Classifier, Random Forest Classifier, Support Vector Machine y K Nearest Neighbours. Medimos para cada uno el tiempo de cómputo, \textit{accuracy}, \textit{precision} y \textit{recall}, además de calcular la cantidad de falsos y verdaderos casos positivos y negativos. Los resultados son los siguientes:
+Luego de definir nuestros atributos, probamos distintos modelos con el objetivo de evaluar su performance. Decidimos utilizar para nuestra comparación Naive Bayes, Decision Tree Classifier, Random Forest Classifier, Support Vector Machine, K Nearest Neighbours y AdaBoost. Éste último es similar a la técnica de boosting vista en clase, en la cual la salida de otros algoritmos de machine learning (``weak learners'') son combinadas en una suma pesada que representa la salida final del clasificador. La principal diferencia de un simple boosting respecto a AdaBoostes que este último es adaptativo en el sentido de que los weak learners subsiguientes son a su vez orientados para corregir las instancias mal clasificadas por los anteriores weak learners.
 
-\textbf{Random Forest Classifier:}
-\begin{itemize}
-	\item Test mean accuracy: 0.953777777778
-	\item false positives: 169
-	\item false negatives: 247
-	\item true positives: 4187
-	\item true negatives: 4397
-	\item precision: 0.9612029384756657
-	\item recall: 0.9442940911141182
-	\item tiempo de cómputo: 272.41 segundos
-\end{itemize}
+Antes de entrenar los modelos, se separó el 10\% de los datos totales para ser empleados como testing set y dar una medida más realista del desempeño de los modelos, entrenados con el 90\% restante de los datos.
 
-\textbf{Decision Tree Classifier:}
-\begin{itemize}
-	\item Test mean accuracy: 0.920444444444
-	\item false positives: 354
-	\item false negatives: 362
-	\item true positives:  4086
-	\item true negatives:  4198
-	\item precision: 0.9202702702702703
-	\item recall: 0.9186151079136691
-	\item tiempo de cómputo: 34.48 segundos
-\end{itemize}
+% AdaBoost is sensitive to noisy data and outliers. AdaBoost training process selects only those features known to improve the predictive power of the model, reducing dimensionality and potentially improving execution time as irrelevant features do not need to be computed.
 
-\textbf{Support Vector Machine:}
-\begin{itemize}
-	\item Test mean accuracy: 0.793333333333
-	\item false positives: 400
-	\item false negatives: 1460
-	\item true positives:  3017
-	\item true negatives:  4123
-	\item precision: 0.8829382499268364
-	\item recall: 0.6738887647978558
-	\item tiempo de cómputo: 2:17:00 hs
-\end{itemize}
+\section{Resultados}
 
-\textbf{Naive Bayes with Gaussian Probabilities:}
-\begin{itemize}
-	\item Test mean accuracy: 0.805888888889
-	\item false positives: 1321
-	\item false negatives: 426
-	\item true positives:  4100
-	\item true negatives:  3153
-	\item precision: 0.7563180225050729
-	\item recall: 0.9058771542200619
-	\item tiempo de cómputo: 0.32 segundos
-\end{itemize}
+A contiunación se presentarán para distintos modelos el tiempo de cómputo para entrenar al modelo (sin cross-validation), \emph{Train mean accuracy} (calculado sobre los datos de entrenamiento empleando un K-Folding Cross Validation con K = 10), cantidad de falsos y verdaderos casos positivos y negativos (calculados en base a la predicción de sobre el training set), \textit{precision} y \textit{recall}, definidos como:
 
-\textbf{kNN:}
-\begin{itemize}
-	\item Test mean accuracy: 0.871444444444
-	\item false positives: 762
-	\item false negatives: 395
-	\item true positives:  4131
-	\item true negatives:  3712
-	\item precision: 0.8442673206621705
-	\item recall: 0.912726469288555
-	\item tiempo de cómputo: 1181.95 segundos
-\end{itemize}
+\begin{align*}
+\text{precision}& =\frac{\text{verdaderos positivos}}{\text{verdaderos positivos} + \text{falsos positivos}}&
+\text{recall}& =\frac{\text{verdaderos positivos}}{\text{verdaderos positivos} + \text{falsos negativos}}&
+\end{align*}
 
 
-Donde 'Test mean accuracy' es el promedio calculado a partir de la K-Folding Cross Validation con K = 10.
 
-A su vez, vale considerar que para correr SVM quitamos 90 parámetros calculados mediante Bag of Words debido a que la complejidad del algoritmo depende de éstos y al correr este clasificador con la misma cantidad de parámetros con los que corrimos los otros modelos el tiempo de cómputo se volvía inmenso, lo cual lo descartaba en la práctica como un método de clasificación útil
+%Los resultados son los siguientes:
+%
+%\begin{table}[H]
+%	\centering
+%	\label{my-label}
+%	\begin{tabular}{|l|l|l|l|l|l|}
+%		\hline
+%		\textbf{}             & \multicolumn{1}{c|}{\textbf{Rand. Forest}} & \multicolumn{1}{c|}{\textbf{Decision Tree}} & \multicolumn{1}{c|}{\textbf{SVM}} & \multicolumn{1}{c|}{\textbf{Naive Bayes}} & \multicolumn{1}{c|}{\textbf{kNN}} \\ \hline
+%		Train mean accuracy    & 0.9538                                      & 0.9204                                      & 0.7933                            & 0.8059                                    & 0.8714                            \\ \hline
+%		false positives       & 169                                         & 354                                         & 400                               & 1321                                      & 762                               \\ \hline
+%		false negatives       & 247                                         & 362                                         & 1460                              & 426                                       & 395                               \\ \hline
+%		true positives        & 4187                                        & 4086                                        & 3017                              & 4100                                      & 4131                              \\ \hline
+%		true negatives        & 4397                                        & 4198                                        & 4123                              & 3153                                      & 3712                              \\ \hline
+%		precision             & 0.9612                                      & 0.9203                                      & 0.8829                            & 0.7563                                    & 0.8443                            \\ \hline
+%		recall                & 0.9443                                      & 0.9186                                      & 0.6739                            & 0.9059                                    & 0.9127                            \\ \hline
+%		tiempo de cómputo (s) & 272.41                                      & 34.48                                       & 8220                 & 0.32                                      & 1181.95                           \\ \hline
+%	\end{tabular}
+%\end{table}
 
-Como una primera conclusión de este experimento observamos que los mejores resultados se obtienen con los modelos más 'sencillos', mientras que los modelos que requieren mayor cómputo como kNN o SVM arrojan peores resultados.
-Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad que nos interesa destacar al armar un clasificador de Spam
+
+
+
+
+\subsection{Support Vector Machine}
+
+Este método resultó impráctico debido al descomunal tiempo de computo necesario para entrenar el modelo. Quitándole 90 atributos calculados mediante Bag of Words el tiempo de cómputo para entrenar al modelo (sin cross-validation) fue de 2:17 horas. El Test mean accuracy resultó en este caso de 0.7933, la precision fue de 0.8829 y el recall, 0.6739. SVM utiliza quadratic programming lo cual conlleva un gran tiempo de cálculo cuando se trabaja con muchas dimensiones. No hay un criterio marcado de localidad para buscar hiperplanos separadores. Para sacarle más provecho a este método haría falta un kernel especifico.
 
 \subsection{Naive Bayes}
 
-Naive Bayes tiene la interesante propiedad de dar resultados acpetables pagando un tiempo de cómputo mínimo (tarda 0.32 segundos en clasificar el corpus de texto completo compuesto por 9 mil mails). Sin embargo, sus resultados no son aceptables en términos de un clasificador real. Principalmente porque si bien logra un \textit{accuracy} de un 80\%, genera una gran cantidad de falsos positivos en relación a los falsos negativos (\textit{recall} es de un 90\% mientras que \textit{precision} es de un 75\%). Naive Bayes considera cada uno de los atributos como un factor independiente de los otros atributos que aporta 'probabilisticamente' a la decisión sobre la clasificación de un elemento. Por esto decidimos quitar varios de sus atributos e ir agregándoselos por partes para de esta manera comprobar cómo varían los resultados obtenidos.
+Naive Bayes tiene la interesante propiedad de dar resultados acpetables pagando un tiempo de cómputo mínimo (tarda 0.32 segundos en entrenarse sobre el corpus de texto completo compuesto por 9 mil mails). Sin embargo, sus resultados no son aceptables en términos de un clasificador real. Principalmente porque, como se puede ver en el Cuadro \ref{naive}, si bien logra un \textit{accuracy} de un 80\%, genera una gran cantidad de falsos positivos en relación a los falsos negativos (\textit{recall} es de un 90\% mientras que \textit{precision} es de un 75\%). Naive Bayes considera cada uno de los atributos como un factor independiente de los otros atributos que aporta 'probabilisticamente' a la decisión sobre la clasificación de un elemento. Por esto decidimos quitar varios de sus atributos e ir agregándoselos por partes para de esta manera comprobar cómo varían los resultados obtenidos.
 
-\textbf{10 Atributos:}
-\begin{itemize}
-	\item Test mean accuracy: 0.49
-	\item false positives: 4465
-	\item false negatives: 125
-	\item true positives:  4266
-	\item true negatives:  144
-	\item precision: 0.4886038254495476
-	\item recall: 0.9715326804828057
-\end{itemize}
-
-\textbf{65 Atributos:}
-\begin{itemize}
-	\item Test mean accuracy: 0.616222222222
-	\item false positives: 3269
-	\item false negatives: 185
-	\item true positives:  4285
-	\item true negatives:  1261
-	\item precision: 0.5672491395287265
-	\item recall: 0.9586129753914989
-\end{itemize}
-\textbf{130 Atributos:}
-\begin{itemize}
-	\item Test mean accuracy: 0.805888888889
-	\item false positives: 1321
-	\item false negatives: 426
-	\item true positives:  4100
-	\item true negatives:  3153
-	\item precision: 0.7563180225050729
-	\item recall: 0.9058771542200619
-\end{itemize}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\textbf{}          & \multicolumn{1}{c|}{\textbf{10 Atributos}} & \multicolumn{1}{c|}{\textbf{65 Atributos}} & \multicolumn{1}{c|}{\textbf{130 Atributos}} \\ \hline
+		Train mean accuracy & 0.49                                       & 0.6162                                     & 0.8059                                      \\ \hline
+		false positives    & 4465                                       & 3269                                       & 1321                                        \\ \hline
+		false negatives    & 125                                        & 185                                        & 426                                         \\ \hline
+		true positives     & 4266                                       & 4285                                       & 4100                                        \\ \hline
+		true negatives     & 144                                        & 1261                                       & 3153                                        \\ \hline
+		precision          & 0.4886                                     & 5672                                       & 0.7563                                      \\ \hline
+		recall             & 0.9715                                     & 0.9586                                     & 0.9059                                      \\ \hline
+	\end{tabular}
+	\caption{Resultados de Naive Bayes.}
+		\label{naive}
+\end{table}
 
 Lo primero que podemos observar es que el clasificador Naive Bayes es muy sensible a la cantidad de atributos: parecería mejorar invariablemente en la medida que se agregan más. Esto sucede debido a que como cada atributo se considera independiente del resto y aporta una 'porción' de la probabilidad, al agregar más atributos la probabilidad total debería estar más afinada. Por otro lado, Naive Bayes no distingue distintas importancias entre los atributos, por lo que la efectividad de éste método también está supeditada a que la elección de los atributos que se agregan sea correcta.
 
@@ -269,94 +224,48 @@ Otra observación que puede realizarse es que cuando el clasificador no tiene su
 
 \subsection{Random Forests}
 
-Debido a nuestros primeros resultados obtenidos al comparar distintos modelos, decidimos realizar varias pruebas con el clasificador Random Forest variando uno de sus hiperparámetros más importantes: la cantidad de árboles a utilizar. Mientras que en nuestra primera experiencia utilizamos 100 árboles, decidimos observar los resultados de aplicar el clasificador al mismo corpus pero con 50, 30, 150 y 200 árboles para observar cómo afectan los resultados en términos de predicción.
+El tiempo de cómputo de un modelo Random Forest con todos los atributos y con 100 árboles fue de 272.41 segundos. Se realizaron varias pruebas con el este clasificador variando uno de sus hiperparámetros más importantes: la cantidad de árboles a utilizar. En el Cuadro \ref{rf} se puede ve cómo este hiperparámetro afecta los resultados en términos de predicción.
 
-\textbf{30 Árboles:}
-\begin{itemize}
-	\item Test mean accuracy: 0.951777777778
-	\item false positives: 150
-	\item false negatives: 284
-	\item true positives:  4256
-	\item true negatives:  4310
-	\item precision: 0.9659555152065366
-	\item recall: 0.9374449339207048
-\end{itemize}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|l|l|l|l|}
+		\hline
+		\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{30 árboles}} & \multicolumn{1}{c|}{\textbf{50 árboles}} & \multicolumn{1}{c|}{\textbf{100 árboles}} & \textbf{150 árboles} & \textbf{200 árboles} \\ \hline
+		Test mean accuracy              & 0.9518                                   & 0.9521                                   & 0.9538                                    & 0.9566               & 0.9529               \\ \hline
+		false positives                 & 150                                      & 155                                      & 169                                       & 144                  & 158                  \\ \hline
+		false negatives                 & 284                                      & 276                                      & 247                                       & 247                  & 266                  \\ \hline
+		true positives                  & 4256                                     & 4296                                     & 4187                                      & 4256                 & 4247                 \\ \hline
+		true negatives                  & 4310                                     & 4123                                     & 4397                                      & 4353                 & 4329                 \\ \hline
+		precision                       & 0.9660                                   & 0.9652                                   & 0.9612                                    & 0.9673               & 0.9641               \\ \hline
+		recall                          & 0.9374                                   & 0.9396                                   & 0.9443                                    & 0.9451               & 0.9411               \\ \hline
+	\end{tabular}
+		\caption{Resultados de Random Forest.}
+		\label{rf}
+\end{table}
 
-\textbf{50 Árboles:}
-\begin{itemize}
-	\item Test mean accuracy: 0.952111111111
-	\item false positives: 155
-	\item false negatives: 276
-	\item true positives:  4296
-	\item true negatives:  4123
-	\item precision: 0.9651763648618288
-	\item recall: 0.9396325459317585
-\end{itemize}
-
-\textbf{150 Árboles:}
-\begin{itemize}
-	\item Test mean accuracy: 0.956555555556
-	\item false positives: 144
-	\item false negatives: 247
-	\item true positives:  4256
-	\item true negatives:  4353
-	\item precision: 0.9672727272727273
-	\item recall: 0.9451476793248945
-\end{itemize}
-
-\textbf{200 Árboles}
-\begin{itemize}
-	\item Test mean accuracy: 0.952888888889
-	\item false positives: 158
-	\item false negatives: 266
-	\item true positives:  4247
-	\item true negatives:  4329
-	\item precision: 0.9641316685584563
-	\item recall: 0.9410591624196765
-\end{itemize}
-
-En primer lugar se puede observar que disminuir la cantidad de árboles empeora la \textit{accuracy} aunque su variación es realmente mínima (0,2\%). Aumentar la cantidad de árboles, por otro lado, la aumenta, aunque también la diferencia es despreciable (0,2\% también). El principal efecto que parece generar tanto si reducimos la cantidad de árboles como si los aumentamos es ampliar la brecha entre \textit{precision} y \textit{recall}, aumentando un poco más significativamente (0,5\%) la \textit{precision}. Es decir, disminuye la cantidad de falsos positivos. Este cambio mejora el clasificador en términos de un clasificador de Spam.
-A su vez, casi no se observan diferencias entre los resultados obtenidos con 150 y 200 árboles ni tampoco entre los resultados obtenidos con 30 o 50. Aún así, el hiperparámetro que mejor resultado obtuvo es al correr Random Forest con 150 árboles el cuál minimiza la cantidad de falsos positivos.
-La conclusión de esta experiencia, sin embargo, parecería ser que la cantida de árboles del Random Forest no es un factor determinante a la hora de evaluar su eficiencia.
-
+En primer lugar se puede observar que aumentar la cantidad de árboles en general tiende a mejorar la \textit{accuracy} aunque su variación es relativamente pequeña (alrededor del 0,2\%). Sin embargo, con un exceso de arboles la \textit{accuracy} comienza a disminuir, aunque también con una tasa de decrecimiento baja. En general la eficiencia de este algoritmo como clasificador para nuestro cuerpo de datos no parece ser muy sensible ante variaciones de la cantidad de árboles empleada, al menos en el rango de 30 a 200 árboles. Aún así, el mejor resultado, tanto en términos de accuracy como de recall y de precision, se obtuvo al correr Random Forest con 150 árboles.
 
 \subsection{kNN:}
 
-Para K Nearest Neigbours consideramos intentar mejorar los resultados a partir de variar los k vecinos considerados. Mientras que en nuestra experiencia utilizamos un k = 5, testeamos los resultados de aplicar un k = 10 y k = 20
+Para K Nearest Neigbours consideramos intentar mejorar los resultados a partir de variar los k vecinos considerados. Mientras que en una primera instancia utilizamos un k = 5, testeamos luego los resultados de aplicar un k = 10 y k = 20
 
-\textbf{K = 5:}
-\begin{itemize}
-	\item Test mean accuracy: 0.871444444444
-	\item false positives: 762
-	\item false negatives: 395
-	\item true positives:  4131
-	\item true negatives:  3712
-	\item precision: 0.8442673206621705
-	\item recall: 0.912726469288555
-\end{itemize}
+\begin{table}[H]
+	\centering
+	\label{my-label}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{K = 5}} & \multicolumn{1}{c|}{\textbf{K = 10}} & \multicolumn{1}{c|}{\textbf{K = 20}} \\ \hline
+		Train mean accuracy              & 0.8714                              & 0.8127                               & 0.7949                               \\ \hline
+		false positives                 & 762                                 & 686                                  & 758                                  \\ \hline
+		false negatives                 & 395                                 & 1000                                 & 1088                                 \\ \hline
+		true positives                  & 4131                                & 3468                                 & 3444                                 \\ \hline
+		true negatives                  & 3712                                & 3846                                 & 3710                                 \\ \hline
+		precision                       & 0.8443                              & 0.8348                               & 0.8196                               \\ \hline
+		recall                          & 0.9127                              & 0.7761                               & 0.7599                               \\ \hline
+	\end{tabular}
+\end{table}
 
-\textbf{K = 10:}
-\begin{itemize}
-	\item Test mean accuracy: 0.812666666667
-	\item false positives: 686
-	\item false negatives: 1000
-	\item true positives:  3468
-	\item true negatives:  3846
-	\item precision: 0.8348579682233991
-	\item recall: 0.7761862130707251
-\end{itemize}
-\textbf{K = 20:}
-\begin{itemize}
-	\item Test mean accuracy: 0.794888888889
-	\item false positives: 758
-	\item false negatives: 1088
-	\item true positives:  3444
-	\item true negatives:  3710
-	\item precision: 0.8196097096620657
-	\item recall: 0.7599293909973521
-\end{itemize}
-
-Podemos observar que en la medida que aumenta el k, los resultados son peores. Esto se explica debido a que estamos permitiendo votar a más cantidad de 'vecinos' que se encuentran más lejos dentro del hiperplano con respecto a la coordenada en la que se evaluó el mail que queremos clasificar utilizando los parametros dados. Si bien un k muy bajo corre el peligro de que el único criterio de clasificación provenga de un \textit{outlyer}, un k muy alto difumina la idea del método kNN que es, a saber, clasificar nuestro corpus en base a la cercanía respecto al corpus que utilizamos como entrenamiento.
+Podemos observar que en la medida que aumenta el k, los resultados son peores. Esto se explica debido a que estamos permitiendo votar a más cantidad de 'vecinos' que se encuentran más lejos dentro del hiperplano con respecto a la coordenada en la que se evaluó el mail que queremos clasificar utilizando los parámetros dados. Si bien un k muy bajo corre el peligro de que el único criterio de clasificación provenga de un \textit{outlyer}, un k muy alto difumina la idea del método kNN que es, a saber, clasificar nuestro corpus en base a la cercanía respecto al corpus que utilizamos como entrenamiento.
 
 
 
@@ -367,7 +276,7 @@ Podemos observar que en la medida que aumenta el k, los resultados son peores. E
 % \subsection{Bagging}
 % \subsection{Stacking}
 
-% \section{Reducción de dimensionalidad}
+ \section{Reducción de dimensionalidad}
 
 % Describir brevemente las técnicas empleadas. PCA y penalidades.
 
@@ -375,7 +284,19 @@ Podemos observar que en la medida que aumenta el k, los resultados son peores. E
 % Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
 
 
-% \section{Discusión}
+ \section{Discusión}
+
+[RECORTADO DE PARTES QUE ESCRIBIO DAMIAN]
+[COMPLETAR]
+
+%https://en.wikipedia.org/wiki/Bayesian_poisoning
+
+%https://www.microsoft.com/en-us/research/publication/why-do-nigerian-scammers-say-they-are-from-nigeria/
+
+Como una primera conclusión de este experimento observamos que los mejores resultados se obtienen con los modelos más 'sencillos', mientras que los modelos que requieren mayor cómputo como kNN o SVM arrojan peores resultados.
+Los métodos basádos en árboles, y en particular Random Forest, además de otorgar los mejores resultados, disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad que nos interesa destacar al armar un clasificador de Spam
+
+La conclusión de esta experiencia, sin embargo, parecería ser que la cantidad de árboles del Random Forest no es un factor determinante a la hora de evaluar su eficiencia.
 
 % Analizar los resultados, buscando responder cuestiones como, por ejemplo: ¿cuáles son los atributos encontrados con mayor poder predictivo?, ¿cuán sensibles fueron los algoritmos a las técnicas de reducción de dimensionalidad consideradas?, ¿resultó clara la elección del algoritmo para la competencia, o hubo que poner en la balanza distintos factores?
 
