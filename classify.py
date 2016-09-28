@@ -1,7 +1,7 @@
 # Aprendizaje Automatico
 
 # set this variable to true for competition
-BEGIN_COMPETITION = False
+BEGIN_COMPETITION = True
 
 import sys
 import os.path
@@ -250,7 +250,7 @@ def buildFeaturesFromData(df, rebuild = False):
 	for feature in features:
 		df[feature] = list(map(lambda mime_body: feature in mime_body, df.mime_body))
 
-def performance_measure(preditions, actual_classes):
+def performance_measure(predictions, actual_classes):
 
 	if len(predictions) != len(actual_classes):
 		raise ValueError('Invalid vector size.')
@@ -263,7 +263,7 @@ def performance_measure(preditions, actual_classes):
 	for p in range(len(predictions)):
 		if predictions[p]  == 'spam' and actual_classes[p] == 'spam':
 			true_positives = true_positives + 1
-		if predictionst[p] == 'spam' and actual_classes[p] == 'ham':
+		if predictions[p] == 'spam'  and actual_classes[p] == 'ham':
 			false_positives = false_positives + 1
 		if predictions[p]  == 'ham'  and actual_classes[p] == 'spam':
 			false_negatives = false_negatives + 1
@@ -275,28 +275,43 @@ def performance_measure(preditions, actual_classes):
 
 	return {'tp': true_positives, 'fp': false_positives, 'fn': false_negatives, 'tn': true_negatives, 'precision': precision, 'recall': recall}
 
+
+	pca = PCA(n_components=100)
+	pca.fit(X_train)
+	X_train = pca.transform(X_train)
+	X_test  = pca.transform(X_test)
+
 def begin_competition():
-	if os.path.isfile('dataset_dev/predict.json'):
-		raise ValueError('Competition prediction file missing')
+
+	if not os.path.isfile('dataset_dev/predict.json'):
+		raise ValueError('Competition prediction file missing.')
 
 	rf = RandomForestClassifier(n_estimators=100)
+	pca = PCA(n_components=100)
 
 	# for the competition we will use a decision tree classifier
 	# check if model is already trained
-	if os.path.isfile('training/model_comp_dtc.pickle'):
+	if os.path.isfile('training/model_comp_rf.pickle') and os.path.isfile('training/model_comp_pca.pickle'):
+
+		# print('Model already trained!')
 
 		with open('training/model_comp_rf.pickle', 'rb') as f:
 			rf = pickle.load(f)
 
+		with open('training/model_comp_pca.pickle', 'rb') as f:
+			pca = pickle.load(f)
+
 	else:
 
-		print('Retraining model!') # whole dataset
+		# print('Retraining model!') # whole dataset
 
 		ham_txt  = json.load(open('dataset_dev/ham_dev.json'))
 		spam_txt = json.load(open('dataset_dev/spam_dev.json'))
 
 		df = pd.DataFrame(ham_txt+spam_txt, columns=['text'])
 		df['class'] = ['ham' for _ in range(len(ham_txt))]+['spam' for _ in range(len(spam_txt))]	
+
+		buildFeaturesFromData(df)
 
 		# prepare data and train classifiers
 		select_cols = df.columns.tolist()
@@ -308,23 +323,30 @@ def begin_competition():
 		X = df[select_cols].values
 		y = df['class']
 
+		pca.fit(X)
+		X = pca.transform(X)
 		rf.fit(X, y)
 
 		with open('training/model_comp_rf.pickle', 'wb') as f:
 			pickle.dump(rf, f)
 
-	# prepare data and train classifiers
-	select_cols = df.columns.tolist()
-	select_cols.remove('class')
-	select_cols.remove('text')
-	select_cols.remove('mime_body')	
+		with open('training/model_comp_pca.pickle', 'wb') as f:
+			pickle.dump(pca, f)
 
 	# now that the model is fit, predict a class!
 	predict_txt = json.load(open('dataset_dev/predict.json'))
 	p_df = pd.DataFrame(predict_txt, columns=['text'])
 	buildFeaturesFromData(p_df)
 
+	# prepare data and train classifiers
+	select_cols = p_df.columns.tolist()
+	# select_cols.remove('class')
+	select_cols.remove('text')
+	select_cols.remove('mime_body')	
+
 	X_predict = p_df[select_cols].values
+	X_predict = pca.transform(X_predict) # build principal components
+
 	predictions = rf.predict(X_predict)
 
 	for p in predictions:
@@ -353,6 +375,9 @@ if __name__ == "__main__":
 	random_state = 0 # set seed to always have the same data split
 	df, test = train_test_split(df, test_size = 0.1)
 
+	# build competition dataset to test
+	# test.to_json('dataset_dev/predict.json')
+
 	# in the future, we should be able to just save the model parameters
 	# instead of having to retrain the whole thing
 	with Timer('Build Features From Train Data'):
@@ -371,7 +396,7 @@ if __name__ == "__main__":
 
 	# prepare data and train classifiers
 	select_cols = df.columns.tolist()
-	select_cols.remove('class')
+	# select_cols.remove('class')
 	select_cols.remove('text')
 	select_cols.remove('mime_body')	
 
@@ -387,8 +412,9 @@ if __name__ == "__main__":
 	# PCA (no encontré la forma de aplicarlo bien a nuestro caso)
 	# pca = PCA(n_components='mle')
 	pca = PCA(n_components=100)
-	X_train = pca.fit_transform(X_train)
-	X_test = pca.transform(X_test)
+	pca.fit(X_train)
+	X_train = pca.transform(X_train)
+	X_test  = pca.transform(X_test)
 
 	# Feature selection
 
@@ -399,16 +425,16 @@ if __name__ == "__main__":
 	# X_test  = selector.transform(X_test)
 	
 	# select features according to the k highest scores.
-	selector = SelectKBest(f_classif, k=100)
-	selector.fit(X_train, y_train)
-	X_train = selector.transform(X_train)
-	X_test  = selector.transform(X_test)
+	# selector = SelectKBest(f_classif, k=100)
+	# selector.fit(X_train, y_train)
+	# X_train = selector.transform(X_train)
+	# X_test  = selector.transform(X_test)
 
 	# L1-based feature selection (tampoco encontré moejoras por ahora)
-	lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X_train, y_train)
-	model = SelectFromModel(lsvc, prefit=True)
-	X_train = model.transform(X_train)
-	X_test = model.transform(X_test)
+	# lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X_train, y_train)
+	# model = SelectFromModel(lsvc, prefit=True)
+	# X_train = model.transform(X_train)
+	# X_test  = model.transform(X_test)
 
 	# Training using 10 fold CV.
 	with Timer('Decision Tree Classifier'):
@@ -420,7 +446,7 @@ if __name__ == "__main__":
 	with Timer('Decision Tree Classifier fit'):
 		dtc.fit(X_train, y_train)
 
-    # Save model
+	# Save model
 	with open('training/modelo_dtc.pickle', 'wb') as f:
 		pickle.dump(dtc, f)
 	
@@ -433,7 +459,7 @@ if __name__ == "__main__":
 	with Timer('Random Forest Classifier'):
 		rf = RandomForestClassifier(n_estimators=100)
 		res = cross_val_score(rf, X_train, y_train, cv=10)
-	print(np.mean(res), np.std(res))
+	print("Cross validation: ", np.mean(res), np.std(res))
 	
 	with open('training/modelo_rf.pickle', 'wb') as f:
 		pickle.dump(rf, f)
@@ -451,7 +477,7 @@ if __name__ == "__main__":
 	with Timer('Naive Bayes with Gaussian probabilities'):
 		gnb = GaussianNB()
 		res = cross_val_score(gnb, X_train, y_train, cv=10)
-	print(np.mean(res), np.std(res))
+	print("Cross validation: ", np.mean(res), np.std(res))
 
 	with open('training/modelo_gnb.pickle', 'wb') as f:
 		pickle.dump(gnb, f)
@@ -469,8 +495,8 @@ if __name__ == "__main__":
 	with Timer('K Nearest Neighbours'): # creo que no tiene sentido
 		neigh = KNeighborsClassifier(n_neighbors=20)
 		res = cross_val_score(neigh, X_train, y_train, cv=10)
-		print(np.mean(res), np.std(res))
-	with open('modelo_knn.pickle', 'wb') as f:
+		print("Cross validation: ", np.mean(res), np.std(res))
+	with open('training/modelo_knn.pickle', 'wb') as f:
 		pickle.dump(neigh, f)
 
 	with Timer('KNN fit'):
@@ -492,7 +518,7 @@ if __name__ == "__main__":
 		ada = AdaBoostClassifier(n_estimators=100)
 		res = cross_val_score(ada, X_train, y_train, cv=10)
 	
-	print(np.mean(res), np.std(res))
+	print("Cross validation: ", np.mean(res), np.std(res))
 		
 	with Timer('AdaBoost fit'):
 		ada.fit(X_train, y_train)
