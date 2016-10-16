@@ -158,8 +158,9 @@ def getAttributesByFrequency(df, text = 'mime_body'):
 
 	i = 1
 	for key, value in dictOrd.items():
-		if i == 200:
-			break
+		if value < 100:
+			break;
+		
 		print(key , value)
 		i = i + 1
 		words.append(key)

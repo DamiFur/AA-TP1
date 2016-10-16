@@ -105,7 +105,7 @@ Segunda entrega &         &      \\ \hline
 
 \section{Introducción}
 
-El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para poder buscar alguna forma de evitar hacer overfitting de los datos. Dejamos el 10\% de los datos como testing set, utilizando el resto para experimentar con los diferentes modelos.
+El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para buscar una mejor performance de los algoritmos de aprendizaje. Dejamos el 10\% de los datos como testing set, utilizando el resto para experimentar con los diferentes modelos.
 
 \section{Extracción de atributos}
 
@@ -115,9 +115,9 @@ En una primera etapa, antes de intentar seleccionar atributos de forma manual, l
 
 Dado que el alto tiempo de computo para calcular la frecuencia de cada palabra en cada mail, decidimos simplemente tomar una variable binaria por mail que indica si la misma esta o no en el mismo. La idea fue calcular por clase cuantas veces aparecía cada palabra en el cuerpo de un correo, para luego ordenar todas las palabras por la diferencia absoluta en frecuencia relativa y de esa forma seleccionar los mejores atributos. Seguramente existe un orden mejor, pero lo que buscábamos era encontrar las palabras que mas distinguían entre las dos clases. Una idea que teníamos a priori además es que todas las conjunciones iban a aparecer con la misma frecuencia en ambas clases, por lo que al calcular el score se compensarían y no aparecerían en nuestros resultados finales. Además ignoramos todos los números, dado que creemos que no es un buen predictor.
 
-En una primera instancia, decidimos tomar las mejores 200 palabras ordenadas por nuestro score para luego intentar seleccionar un subconjunto.
+Consideramos que todas las palabras que son sustantivos propios referidos a meses o nombres de personas no son buenos predictores, dado que  \textbf{PORQUE? SE LES OCURRE UNA JUSTIFICACION? O LO SACAMOS?}. Lo mismo sucede con las conjunciones que finalmente terminaron apareciendo. De esta manera terminamos con una lista de features dada por las apariciones de las palabras en los diferentes mails.
 
-Por un lado creemos que todas las palabras que son sustantivos propios referidos a meses o nombres de personas no son buenos predictores. Lo mismo sucede con las conjunciones que finalmente terminaron apareciendo. De esta manera terminamos con el siguiente conjunto de palabras:
+En una primera etapa, para decidir que atributos se iban a tener en cuenta tomamos todas las palabras que mostraban una diferencia de frecuencia relativa entre clases de mails mayor o igual a 100. De esta forma terminamos seleccionando XXX atributos. Entre ellos se encuentran:
 
 ['please', 'original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
 	'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
@@ -224,7 +224,7 @@ Otra observación que puede realizarse es que cuando el clasificador no tiene su
 
 \subsection{Random Forests}
 
-El tiempo de cómputo de un modelo Random Forest con todos los atributos y con 100 árboles fue de 272.41 segundos. Se realizaron varias pruebas con el este clasificador variando uno de sus hiperparámetros más importantes: la cantidad de árboles a utilizar. En el Cuadro \ref{rf} se puede ve cómo este hiperparámetro afecta los resultados en términos de predicción.
+El tiempo de cómputo de un modelo Random Forest con todos los atributos y con 100 árboles fue de 4.54 minutos. Se realizaron varias pruebas con el este clasificador variando uno de sus hiperparámetros más importantes: la cantidad de árboles a utilizar. En el Cuadro \ref{rf} se puede ve cómo este hiperparámetro afecta los resultados en términos de predicción.
 
 \begin{table}[H]
 	\centering
