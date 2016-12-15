@@ -1,5 +1,7 @@
 \documentclass[10pt,a4paper]{article}
-\usepackage[paper=a4paper]{geometry}
+\usepackage[a4paper,bindingoffset=0.2in,%
+            left=1in,right=1in,top=1in,bottom=1in,%
+            footskip=.25in]{geometry}
 
 \usepackage[utf8x]{inputenc}
 \usepackage[spanish]{babel}
@@ -76,9 +78,9 @@
 \begin{tabular}{|l l l l|}
 \hline
 Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico       	& Carrera \\ \hline
-Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com & computación (licenciatura) \\ 
-Damián Furman & \multicolumn{1}{c}{936/11}& damian.a.furman@gmail.com & computación (licenciatura)\\
-Germán Abrevaya & \multicolumn{1}{c}{-} & germanabrevaya@gmail.com & física (doctorado)\\ \hline
+Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com & Computación (Licenciatura) \\ 
+Damián Furman & \multicolumn{1}{c}{936/11}& damian.a.furman@gmail.com & Computación (Licenciatura)\\
+Germán Abrevaya & \multicolumn{1}{c}{-} & germanabrevaya@gmail.com & Física (Doctorado)\\ \hline
 \end{tabular}
 \end{table}
 
@@ -105,17 +107,15 @@ Segunda entrega &         &      \\ \hline
 
 \section{Introducción}
 
-El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para buscar una mejor performance de los algoritmos de aprendizaje. Dejamos el 10\% de los datos como testing set, utilizando el resto para experimentar con los diferentes modelos.
+El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para intentar buscar una mejor performance de los algoritmos de aprendizaje. Dejamos el 10\% de los datos como testing set, utilizando el resto para experimentar con los diferentes modelos. Al elegir los hiperparametros sobre el training set, caemos en la posibilidad de estar haciendo overfitting. Siguiendo el Principio de Occam, una vez elegido el modelo que utilizaremos, también haremos feature selection para intentar encontrar el modelo mas simple posible con una performance que consideremos razonable.
 
 \section{Extracción de atributos}
 
 \subsection{Bag of words}
 
-En una primera etapa, antes de intentar seleccionar atributos de forma manual, la idea fue analizar la frecuencia de cada palabra en cada mail, ignorando el orden de las palabras. Notar que los mails están en formato MIME, por lo que no se podía simplemente hacer un análisis de frecuencia sobre el MIME en plaintext, si no que había que utilizar un parser para luego poder analizar las diferentes partes de cada correo. Ademas, muchos de los correos no estaban en utf-8, lo que dificultaba el analisis. Por esa razón decidimos ignorarlos para el análisis de frecuencia.
+En una primera etapa, antes de intentar seleccionar atributos de forma manual, la idea fue analizar la frecuencia de cada palabra en cada mail, ignorando el orden de las palabras. Notar que los mails están en formato MIME, por lo que no se podía simplemente hacer un análisis de frecuencia sobre el MIME en plaintext, si no que había que utilizar un parser para luego poder analizar las diferentes partes de cada correo. Además, muchos de los correos no estaban en utf-8, lo que dificultaba el análisis. Por esa razón decidimos ignorarlos para el análisis de frecuencia.
 
-Dado que el alto tiempo de computo para calcular la frecuencia de cada palabra en cada mail, decidimos simplemente tomar una variable binaria por mail que indica si la misma esta o no en el mismo. La idea fue calcular por clase cuantas veces aparecía cada palabra en el cuerpo de un correo, para luego ordenar todas las palabras por la diferencia absoluta en frecuencia relativa y de esa forma seleccionar los mejores atributos. Seguramente existe un orden mejor, pero lo que buscábamos era encontrar las palabras que mas distinguían entre las dos clases. Una idea que teníamos a priori además es que todas las conjunciones iban a aparecer con la misma frecuencia en ambas clases, por lo que al calcular el score se compensarían y no aparecerían en nuestros resultados finales. Además ignoramos todos los números, dado que creemos que no es un buen predictor.
-
-Consideramos que todas las palabras que son sustantivos propios referidos a meses o nombres de personas no son buenos predictores, dado que  \textbf{PORQUE? SE LES OCURRE UNA JUSTIFICACION? O LO SACAMOS?}. Lo mismo sucede con las conjunciones que finalmente terminaron apareciendo. De esta manera terminamos con una lista de features dada por las apariciones de las palabras en los diferentes mails.
+Dado que el alto tiempo de computo para calcular la frecuencia de cada palabra en cada mail, decidimos simplemente tomar una variable binaria por mail que indica si la misma esta o no en el mismo. La idea fue calcular por clase cuantas veces aparecía cada palabra en el cuerpo de un correo, para luego ordenar todas las palabras por la diferencia absoluta en frecuencia relativa y de esa forma seleccionar los mejores atributos. Seguramente existe un orden mejor, pero lo que buscábamos era encontrar las palabras que mas distinguían entre las dos clases. Una idea que teníamos a priori además es que todas las conjunciones iban a aparecer con la misma frecuencia en ambas clases, por lo que al calcular su respectivo score se compensarían y no aparecerían en nuestros resultados finales. Además ignoramos todos los números, dado que creemos que no es un buen predictor.
 
 En una primera etapa, para decidir que atributos se iban a tener en cuenta tomamos todas las palabras que mostraban una diferencia de frecuencia relativa entre clases de mails mayor o igual a 100. De esta forma terminamos seleccionando XXX atributos. Entre ellos se encuentran:
 
@@ -132,7 +132,7 @@ En una primera etapa, para decidir que atributos se iban a tener en cuenta tomam
 
 \pagebreak
 
-Por un lado unificamos las palabras 'original' y 'message', que en general muestran mensajes donde se hizo 'reply' o 'reply all'. Por otro lado, la palabra 'enron' aparecía bastante, lo que nos hizo pensar que el dataset que teníamos era el de Enron. Nos cuestionamos un poco que tan representativo es este dataset, dado que corresponde en general a mails corporativos. Notar que este mismo procedimiento se puede hacer para el titulo de los correos.
+Por un lado unificamos las palabras 'original' y 'message', que en general muestran mensajes donde se hizo 'reply' o 'reply all'. Por otro lado, la palabra 'enron' aparecía bastante, lo que nos hizo pensar que el dataset que teníamos era el de Enron. Nos cuestionamos un poco que tan representativo es este dataset, dado que corresponde en general a mails corporativos. Notar que este mismo procedimiento se puede hacer para el título de los correos.
 
 \subsection{Selección manual}
 
@@ -146,9 +146,9 @@ Luego de seleccionar los primeros atributos utilizando nuestra variacion de Bag 
 	\item is\_multipart
 \end{itemize}
 
-Con estos atributos buscamos captar distintas propiedades frecuentes en los mails de spam: la presencia de links hacia páginas web de contenido malicioso o de spam, el formato HTML que otorga formato a cierta publicidad, la presencia de muchas palabras en mayúscula o títulos o subtítulos con varias letras con mayúsculas seguidas
+Con estos atributos buscamos captar distintas propiedades frecuentes en los mails de spam: la presencia de links hacia páginas web de contenido malicioso o de spam, el formato HTML que otorga formato a cierta publicidad, la presencia de muchas palabras en mayúscula o títulos o subtítulos con varias letras con mayúsculas seguidas.
 
-A su vez, a las palabras determinadas por el Bag of Words le agregamos varias palabras que consideramos de posible aparición frecuente en mails de spam, a saber: offer, sex, viagra, Nigeria, discount entre varias otras
+A su vez, a las palabras determinadas por el Bag of Words le agregamos varias palabras que consideramos de posible aparición frecuente en mails de spam, a saber: offer, sex, viagra, Nigeria, discount entre varias otras.
 
 \section{Modelos}
 
@@ -221,6 +221,7 @@ Lo primero que podemos observar es que el clasificador Naive Bayes es muy sensib
 
 Otra observación que puede realizarse es que cuando el clasificador no tiene suficiente cantidad de atributos tiende a clasificar todo en la misma categoría. En el caso de nuestra experiencia puede verse como con 10 atributos casi todos los mails fueron clasificados como Spam, lo cual genera que la métrica de \textit{precisión} sea bajísima mientras que el \textit{recall} tiene valores muy altos.
 
+\pagebreak
 
 \subsection{Random Forests}
 
@@ -276,15 +277,18 @@ Podemos observar que en la medida que aumenta el k, los resultados son peores. E
 % \subsection{Bagging}
 % \subsection{Stacking}
 
- \section{Reducción de dimensionalidad}
+\pagebreak
+
+\section{Reducción de dimensionalidad}
 
 Se probó el uso de PCA como técnica de reducción de dimensionaidad y algunos selectores de features, basados en test estadísticos univariados. Para ambos casos se vió que la eficiencia, en cuanto a accuracy, precision y recall, disminuía sin importar con cuantos features nos quedasemos. Sin embargo creemos que aplicando la reducción de dimensionalidad o el selector de features se disminuye el overfitting por usar features muy correlacionadas. Terminamos por elegir aplicar PCA antes de entrenar los modelos, ya que lo consideramos más robusto que el selector de features.
+
+\textbf{TODO: Elegir el mejor modelo. Hacer PCA vs Feature Selection, quizas probar luego con Grid Search.}
 
 % \section{Resultados}
 % Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
 
-
- \section{Discusión}
+\section{Discusión}
 
 Los mejores resultados se obtuvieron con los métodos basádos en árboles, y en particular Random Forest, con el cual disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad consideramos que se debe priorizar al construir un clasificador de Spam, y es por esto que fue elegido para la competencia. Mientras que otros métodos que requieren mayor cómputo, como kNN o SVM, no alcanzaron a tener la efectividad de otros más `sencillos'.
 
