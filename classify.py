@@ -1,7 +1,8 @@
 # Aprendizaje Automatico
 
 # set this variable to true for competition
-BEGIN_COMPETITION = True
+BEGIN_COMPETITION = False
+BUILD_DATASET = False
 
 import sys
 import os.path
@@ -135,35 +136,45 @@ def getAttributesByFrequency(df, text = 'mime_body'):
 		words = msg.split()
 		quantity_words = len(set(words))
 
+		# for each word in the email
 		for word in set(words):
 
 			if len(word) <= 2 or len(word) >= 20 or word.isdigit(): continue
 
 			if word in frequencies:
+				# word was already seen, update frequency
 				freq = frequencies[word];
 				if msg_class == "spam":
 					freq[0] = freq[0] + 1
 				else:
-					freq[1] = freq[1] + 1 
+					freq[1] = freq[1] + 1
 			else:
+				# new word, add to dictionary
 				if msg_class == "spam":
 					frequencies[word] = [1,0]
 				else:
 					frequencies[word] = [0,1]
 
-
 	dictOrd = OrderedDict(sorted(frequencies.items(), key=lambda e: abs(e[1][0] - e[1][1]), reverse=True)) # cuidado aca, no lo pondere porque hay el mismo numero de ham spam
+
+	print(dictOrd)
+	print('-'*1000)
 
 	words = []
 
 	i = 1
-	for key, value in dictOrd.items():
-		if value < 100:
+	for key, freq in dictOrd.items():
+		value = abs(freq[0] - freq[1])
+		if value < 500:
 			break;
 		
 		print(key , value)
 		i = i + 1
 		words.append(key)
+
+	print(words)
+
+	print(len(words))
 
 	return words
 
@@ -273,16 +284,92 @@ def buildFeaturesFromData(df, rebuild = False):
 		features = getAttributesByFrequency(df)
 	else:
 		# these are attributes we gathered using getAttributesByFrequency. we pre-calculate them to avoid having to wait every run.
-		features = ['please','original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
-		'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
-		'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
-		'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
-		'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
-		'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
-		'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
-		'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
-		'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
-		'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars', 'offere','offered','offer', 'OFFER', 'Nigeria', 'nigeria', 'pills', 'discount']
+		features = ['subject', 'please', 'original message', 'the', 'sent', 'from', 'thanks', 'will', 'have', 'this', 'know', 'that',
+		'for', 'let', 'enron', 'would', 'any', 'attached', 'questions', 'call', 'are', 'here', 'with', 'gas', 'date', 'corp', 'has',
+		'monday', 'file', 'friday', 'and', 'houston', 'october', 'wednesday', 'not', 'energy', 'you', 'meeting', 'tuesday', 'need',
+		'thursday', 'group', 'california', 'power', 'but', 'following', 'there', 'november', 'should', 'final', 'was', 'more', 'they',
+		'schedule', 'review', 'think', 'john', 'http', 'week', 'see', 'some', 'forwarded', 'hour', 'when', 'deal', 'ect', 'start',
+		'scheduling', 'portland', 'what', 'money', 'been', 'contract', 'fax', 'professional', 'may', 'mark', 'hou', 'last', 'work',
+		'contact', 'iso', 'issues', 'schedules', 'log', 'vince', 'viagra', 'still', 'however', 'hourahead', 'can', 'solicitation',
+		'back', 'between', 'comments', 'mailto', 'also', 'discuss', 'thank', 'software', 'january', 'messages', 'save', 'were',
+		'mike', 'your', 'received', 'site', 'had', 'changes', 'advertisement', 'size', 'could', 'smith', 'prices', 'txt',
+		'westdesk', 'parsing', 'morning', 'louise', 'david', 'sure', 'well', 'going', 'click', 'working', 'visit', 'font',
+		'only', 'jeff', 'trading', 'stop', 'next', 'like', 'plan', 'did', 'tomorrow', 'now', 'ancillary', 'variances', 'awarded',
+		'them', 'windows', 'soft', 'their', 'detected', 'basis', 'steve', 'doc', 'september', 'about', 'who', 'north', 'regarding',
+		'product', 'best', 'agreement', 'online', 'forward', 'conference', 'texas', 'fyi', 'prescription', 'products', 'point',
+		'family', 'process', 'these', 'team', 'world', 'adobe', 'results', 'kaminski', 'help', 'cialis', 'corel', 'thousand',
+		'issue', 'first', 'day', 'down', 'both', 'link', 'offers', 'note', 'market', 'management', 'many', 'employees', 'kevin',
+		'michael', 'scheduled', 'his', 'capacity', 'august', 'which', 'daily', 'bill', 'photoshop', 'end', 'data', 'request',
+		'dollars', 'probably', 'chris', 'james', 'below', 'two', 'act', 'him', 'microsoft', 'during', 'pipeline', 'future',
+		'february', 'body', 'featured', 'bob', 'top', 'said', 'contracts', 'today', 'anyone', 'status', 'yesterday', 'firm',
+		'december', 'year', 'special', 'how', 'ena', 'done', 'copies', 'prohibited', 'color', 'creative', 'draft', 'investment',
+		'disclosure', 'acrobat', 'requested', 'delete', 'services', 'put', 'another', 'either', 'robert', 'macromedia', 'into',
+		'desk', 'able', 'weight', 'global', 'flash', 'related', 'sender', 'asked', 'jim', 'yourself', 'hope', 'markets', 'each',
+		'quality', 'distribution', 'kitchen', 'email', 'update', 'might', 'good', 'discussed', 'stocks', 'phone', 'our', 'set',
+		'differ', 'security', 'anything', 'offer', 'attachments', 'talk', 'wish', 'afternoon', 'privileged', 'yet', 'whether',
+		'create', 'look', 'low', 'easy', 'available', 'advice', 'uncertainties', 'summary', 'already', 'confidential', 'xls', 
+		'meaning', '100%', 'shipping', 'report', 'joe', 'copy', 'until', 'richard', 'cause', 'premiere', 'provide', 'west', 'risk',
+		'registered', 'studio', 'additional', 'project', 'cell', 'recipient', 'private', 'safe', 'mary', 'where', 'proposed', 'america',
+		'trying', 'employee', 'error', 'contain', 'meet', 'life', 'watch', 'credit', 'needs', 'otherwise', 'changed', 'intended', 'popular',
+		'possible', 'dave', 'time', 'currently', 'examples', 'does', 'together', 'statements', 'earlier', 'jones', 'follows', 'getting',
+		'approval', 'information', 'several', 'continue', 'points', 'likely', 'sex', 'told', 'herein', 'early', 'option', 'million',
+		'groups', 'april', 'doing', 'question', 'scott', 'pills', 'legal', 'tabs', 'july', 'oct', 'php', 'concerns', 'com', 'hello',
+		'given', 'resources', 'march', 'off', 'those', 'because', 'return', 'case', 'ferc', 'pack', 'investing', 'looks', 'around',
+		'financial', 'run', 'williams', 'tom', 'suite', 'generic', 'illustrator', 'street', 'revised', 'hundred', 'again', 'evidence',
+		'make', 'research', 'advisor', 'office', 'materially', 'men', 'wanted', 'brand', 'term', 'than', 'without', 'man', 'words',
+		'greg', 'volumes', 'securities', 'meds', 'huge', 'addition', 'ever', 'mailings', 'new', 'support', 'something', 'transactions',
+		'seek', 'relevant', 'committee', 'inherent', 'york', 'thought', 'weeks', 'africa', 'free', 'discussion', 'sunday', 'deals',
+		'price', 'newsletter', 'michelle', 'dose', 'unit', 'listed', 'job', 'operations', 'period', 'stock', 'senior', 'every', 'remove',
+		'role', 'send', 'someone', 'failed', 'don', 'fast', 'sorry', 'give', 'posted', 'understand', 'draw', 'close', 'pill', 'transmission',
+		'biz', 'counterparty', 'nov', 'appropriate', 'dreamweaver', 'non', 'drugs', 'use', 'event', 'electric', 'involve', 'system', 'kim',
+		'none', 'subscribers', 'since', 'plant', 'against', 'perfect', 'predictions', 'readers', 'daren', 'soon', 'objectives', 'paul',
+		'within', 'affiliates', 'indicating', 'then', 'flow', 'authorized', 'lisa', 'attend', 'presentation', 'projections', 'keep',
+		'21b', 'things', 'davis', 'country', 'sole', 'commission', 'utilities', 'risks', 'fireworks', 'ken', 'decision', 'updated',
+		'assumptions', 'room', 'agree', 'beliefs', 'find', 'executive', 'although', 'presently', 'mmbtu', 'appreciate', 'choose',
+		'anticipated', 'taylor', 'worldwide', 'else', 'discreet', 'binding', 'relied', 'susan', '$79', 'sally', 'number', 'center',
+		'express', 'analyst', 'general', 'after', 'seems', 'outside', 'manager', 'costs', 'couple', 'rick', 'staff', 'beginning',
+		'respect', 'called', 'entity', 'boost', 'construed', 'far', 'other', 'least', 'notify', 'hours', 'others', 'leave', 'miller',
+		'enforceable', 'london', 'later', 'move', 'saturday', 'estoppel', 'brian', 'options', 'san', 'search', 'mail', 'cheaper',
+		'filing', 'under', 'hereto', 'person', 'electricity', 'dealer', 'utility', 'along', 'jeffrey', 'physical', 'added', 'bottom',
+		'george', 'says', 'imageready', 'wholesale', 'agreed', 'john', 'david', 'much', '$129', 'importance', 'coming', 'chairman',
+		'remain', 'style', 'shares', 'premium', 'guys', 'deciding', 'having', 'named', 'mobile', '$89', 'pertaining', 'guarantee',
+		'being', 'individual', 'confirmed', 'volume', 'mid', 'hpl', 'brown', 'spoke', 'regulatory', 'super', 'assistant', 'current',
+		'commodity', 'closed', 'determine', 'arial', 'paso', 'gary', 'william', 'estimates', 'position', 'natural', 'href', 'spreadsheet',
+		'text', '$179', 'strictly', 'advise', 'problem', 'advises', 'trader', 'east', 'tim', 'open', 'statements', 'positions', 'part',
+		'forward', 'symbol', 'sheet', 'yours', 'sum', 'pain', 'vice', 'everyone', 'profile', 'appears', 'asset', 'expectations',
+		'tadalafil', 'problems', 'pg&e', 'due', 'numbers', 'month', 'load', 'unable', 'trades', 'way', 'harris', 'interview', 'cannot',
+		'different', 'list', 'accuracy', 'over', 'performance', 'analysis', 'decoration', 'traders', 'facts', 'contains', 'floor',
+		'regards', 'chief', 'eol', 'medical', 'websites', 'preferred', 'full', 'past', 'messaging', 'transportation', 'foresee',
+		'order', 'reports', 'looking', 'hot', 'might', 'feedback', 'reporting', 'expects', 'signed', 'members', 'lot', 'dynegy',
+		'represent', 'identified', 'response', 'believe', 'reform', 'dear', 'speculative', 'really', 'rather', 'responsible',
+		'associated', 'shirley', 'meter', 'sites', 'pro', 'internet', 'box', 'mix', 'sans', 'store', 'professional', 'professional',
+		'account', 'add', 'uns', 'reported', 'filed', 'version', 'heard', 'included', 'reached', 'may', 'respond', 'service',
+		'settlement', 'required', 'critical', 'growth', 'karen', 'comment', 'university', 'storage', 'agreements', 'states', 'she'
+		'level', 'proven', 'wants', 'health', 'info', 'section', 'eric', 'managing', 'steven', 'model', 'washington', 'talked', 'allen',
+		'occur', 'course', 'understood', 'transwestern', 'china', 'bid', 'cut', 'compliance', 'intervention', 'shop', 'conflict',
+		'privacy', 'historical', 'previous', 'spam', 'unless', 'ensure', 'graphics', 'sept', 'activities', 'lose', 'short', 'martin',
+		'erections', 'weather', 'believes', 'ets', 'sincerely', 'paid', 'beck', 'involved', 'xanax', 'ahead', 'frank', 'pass', 'once',
+		'dan', 'central', 'removed', 'thoughts', 'actual', 'titles', 'sir', 'untitled', 'learn', 'suggested', 'helvetica', 'night',
+		'continuing', 'erection', 'structure', 'affiliated', 'very', 'meetings', 'hall', 'weekend', 'expect', 'value', 'allow', 'agenda',
+		'lots', 'addressed', 'projects', 'taking', 'increase', 'specials', 'attachment', 'lavorato', 'investors', 'its', 'check',
+		'president', 'held', 'met', 'website', 'thomas', 'investor', 'lead', 'pricing', 'haven', 'height', '0rder', 'american',
+		'building', 'difficult', 'retail', 'must', 'publisher', 'correct', 'entertainment', 'right', 'immediately', 'just', 'capital',
+		'maybe', 'despite', 'lay', 'lunch', 'prepared', 'parties', 'appear', 'commercial', 'internal', 'effects', 'sexual', 'progress',
+		'season', 'will', 'demand', 'kind', 'never', 'yes', 'estimates', 'lee', 'assume', 'better', 'international', 'otc', 'sales',
+		'post', 'clear', 'second', 'director', 'design', 'farmer', 'ubs', 'factual', 'broker', 'weekly', 'reliable', 'united', 'americas',
+		'court', 'thousands', 'late', 'secure', 'master', 'counterparties', 'getresponse', 'waterfall', 'doesn', 'johnson', 'units',
+		'balance', 'dec', 'location', 'understands', 'wide', 'representative', 'conversation', 'exchange', 'computer', 'vanessa',
+		'planning', 'idea', '70%', 'actually', 'though', 'goals', 'countries', 'anticipates', '80%', 'morgan', 'understanding',
+		'summer', 'including', 'pacific', 'administration', 'memo', 'events', 'sell', 'situation', 'cheap', 'selected', 'change',
+		'approximately', 'stephen', 'margin', 'approach', 'receive', 'analysts', 'jan', 'asap', 'access', 'limited', 'book',
+		'remaining', 'penny', 'dates', 'fact', 'concerned', 'highly', 'claim', 'pharmacy', 'take', 'specific', 'northern',
+		'updates', 'hearing', 'estimate', 'valium', 'moving', 'earnings', 'music', 'running', 'copyright', 'amount', 'watson',
+		'litigation', 'promotional', 'org', 'moved', 'epmi', 'medications', 'competitors', 'opt', 'pretty', 'isn', 'range',
+		'pink', 'width', 'begin', 'penis', 'derivatives', 'completeness', 'simply', 'could', 'impact', 'moore', 'constitutes',
+		'millions', 'written', 'actions', 'dvd', 'too', 'session', 'compare', 'compensated', 'rate', 'pat', 'omit', 'perhaps',
+		'counsel', 'unique', 'place', 'went', 'press', 'state', 'resume', 'invest', 'unsubscribe', 'indicated', 'fuel', 'steffes',
+		'finance', 'previously', 'plants', 'solutions', 'standard', 'licensed', 'consider', 'tell', 'created', 'noted', 'sending',
+		'development', 'separate', 'larry', 'spot', 'law', 'directly']
 
 	# print(features)
 
@@ -314,12 +401,6 @@ def performance_measure(predictions, actual_classes):
 	recall    = true_positives / (true_positives + false_negatives)
 
 	return {'tp': true_positives, 'fp': false_positives, 'fn': false_negatives, 'tn': true_negatives, 'precision': precision, 'recall': recall}
-
-
-	pca = PCA(n_components=100)
-	pca.fit(X_train)
-	X_train = pca.transform(X_train)
-	X_test  = pca.transform(X_test)
 
 def begin_competition():
 
@@ -400,68 +481,91 @@ if __name__ == "__main__":
 		begin_competition()
 		sys.exit(0)
 
-	# read emails from json
-	ham_txt  = json.load(open('dataset_dev/ham_dev.json'))
-	spam_txt = json.load(open('dataset_dev/spam_dev.json'))
+	if BUILD_DATASET:
+		# read emails from json
+		ham_txt  = json.load(open('dataset_dev/ham_dev.json'))
+		spam_txt = json.load(open('dataset_dev/spam_dev.json'))
 
-	ham_len  = len(ham_txt)
-	spam_len = len(spam_txt)
+		ham_len  = len(ham_txt)
+		spam_len = len(spam_txt)
 
-	# create pandas dataframe (http://pandas.pydata.org/)
-	df = pd.DataFrame(ham_txt+spam_txt, columns=['text'])
-	df['class'] = ['ham' for _ in range(len(ham_txt))]+['spam' for _ in range(len(spam_txt))]
+		# create pandas dataframe (http://pandas.pydata.org/)
+		df = pd.DataFrame(ham_txt+spam_txt, columns=['text'])
+		df['class'] = ['ham' for _ in range(len(ham_txt))]+['spam' for _ in range(len(spam_txt))]
 
-	# create test set and validation set. the test set will have 10% of the data.
-	# maybe a good idea would be to take 10% of the data in each set (ham and spam)
-	# instead of doing general sampling to get a more representative dataset.
-	random_state = 0 # set seed to always have the same data split
-	df, test = train_test_split(df, test_size = 0.1)
+		# create test set and validation set. the test set will have 10% of the data.
+		# maybe a good idea would be to take 10% of the data in each set (ham and spam)
+		# instead of doing general sampling to get a more representative dataset.
+		random_state = 0 # set seed to always have the same data split
+		df, test = train_test_split(df, test_size = 0.1)
+		df, test_models = train_test_split(df, test_size = 0.1)
 
-	# build competition dataset to test
-	# test.to_json('dataset_dev/predict.json')
+		# build competition dataset to test
+		# test.to_json('dataset_dev/predict.json')
 
-	# print(list(map(getEmailTitleFromMime, df.text)))
+		# print(list(map(getEmailTitleFromMime, df.text)))
 
-	# sys.exit(0)
+		# sys.exit(0)
 
-	# in the future, we should be able to just save the model parameters
-	# instead of having to retrain the whole thing
-	with Timer('Build Features From Train Data'):
-		buildFeaturesFromData(df)
+		# in the future, we should be able to just save the model parameters
+		# instead of having to retrain the whole thing
+		with Timer('Build Features From Train Data'):
+			buildFeaturesFromData(df, False)
 
-	with Timer('Build Features From Test Data'):
-		buildFeaturesFromData(test)
+		with Timer('Build Features From Test Data'):
+			buildFeaturesFromData(test, False)
+			buildFeaturesFromData(test_models, False)
 
-	# other proposed features:
-	# Contains characters other than UTF8?
-	# type of file attached
-	# exclamation marks
-	# importar alguna libreria de NLP, y probar?
-	# hacer grafico de keywords (freq en ham vs freq en spam)
-	# hacer analisis de palabras en los subjects de los mails (usar libreria de MIME)
+		# other proposed features:
+		# Contains characters other than UTF8?
+		# type of file attached
+		# exclamation marks
+		# importar alguna libreria de NLP, y probar?
+		# hacer grafico de keywords (freq en ham vs freq en spam)
+		# hacer analisis de palabras en los subjects de los mails (usar libreria de MIME)
 
-	# prepare data and train classifiers
-	select_cols = df.columns.tolist()
-	select_cols.remove('class')
-	select_cols.remove('text')
-	select_cols.remove('mime_body')	
-	select_cols.remove('title')
+		# prepare data and train classifiers
+		select_cols = df.columns.tolist()
+		select_cols.remove('class')
+		select_cols.remove('text')
+		select_cols.remove('mime_body')	
+		select_cols.remove('title')
 
-	# print(df)
-	X_train = df[select_cols].values
-	y_train = df['class']
+		X_train = df[select_cols].values
+		y_train = df['class']
 
-	X_test  = test[select_cols].values
-	y_test  = test['class']
+		X_test  = test[select_cols].values
+		y_test  = test['class']
+
+		X_test_models = test[select_cols].values
+		y_test_models = test['class']
+
+		np.save('X_train', X_train)
+		np.save('y_train', y_train)
+		np.save('X_test', X_test)
+		np.save('y_test', y_test)
+		np.save('X_test_models', X_test_models)
+		np.save('y_test_models', y_test_models)
+
+	else:
+		X_train = np.load('X_train.npy')
+		y_train = np.load('y_train.npy')
+
+		X_test  = np.load('X_test.npy')
+		y_test  = np.load('y_test.npy')
+
+		X_test_models = np.load('X_test_models.npy')
+		y_test_models = np.load('y_test_models.npy')
 
 	# dimensionality reduction
 
 	# PCA (no encontré la forma de aplicarlo bien a nuestro caso)
 	# pca = PCA(n_components='mle')
-	pca = PCA(n_components=100)
-	pca.fit(X_train)
-	X_train = pca.transform(X_train)
-	X_test  = pca.transform(X_test)
+	
+	# pca = PCA(n_components=100)
+	# pca.fit(X_train)
+	# X_train = pca.transform(X_train)
+	# X_test  = pca.transform(X_test)
 
 	# Feature selection
 
@@ -483,97 +587,113 @@ if __name__ == "__main__":
 	# X_train = model.transform(X_train)
 	# X_test  = model.transform(X_test)
 
-	# Random Forest Classifier
-	with Timer('Random Forest Classifier'):
-		rf = RandomForestClassifier(n_estimators=150)
-		# res = cross_val_score(rf, X_train, y_train, cv=10)
-	# print("Cross validation: ", np.mean(res), np.std(res))
-	
-	with open('training/modelo_rf.pickle', 'wb') as f:
-		pickle.dump(rf, f)
-		
-	with Timer('Random Forest fit'):
-		rf.fit(X_train, y_train)
-
-	print("Test set mean accuracy:", rf.score(X_test,y_test))
-	predictions_test = rf.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
-
-	# AdaBoost
-	with Timer('AdaBoost Classifier'):
-		ada = AdaBoostClassifier(n_estimators=150)
-		# res = cross_val_score(ada, X_train, y_train, cv=10)
-	
-	# print("Cross validation: ", np.mean(res), np.std(res))
-		
-	with Timer('AdaBoost fit'):
-		ada.fit(X_train, y_train)
-
-	with open('training/modelo_ada.pickle', 'wb') as f:
-		pickle.dump(ada, f)
-
-	print("Test set mean accuracy:", ada.score(X_test,y_test))
-	predictions_test = ada.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
-
-	sys.exit(0)
-
-	# Training using 10 fold CV.
-	with Timer('Decision Tree Classifier'):
-		dtc = DecisionTreeClassifier()
-		# res = cross_val_score(dtc, X_train, y_train, cv=10)
-
-	# print("Cross validation: ", np.mean(res), np.std(res))
-
-	with Timer('Decision Tree Classifier fit'):
-		dtc.fit(X_train, y_train)
-
-	# Save model
-	with open('training/modelo_dtc.pickle', 'wb') as f:
-		pickle.dump(dtc, f)
-	
-	print("Test set mean accuracy:", dtc.score(X_test,y_test))
-	predictions_test = dtc.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
-
-
 	# Naive Bayes
-	print("Naive Bayes")
-	with Timer('Naive Bayes with Gaussian probabilities'):
-		gnb = GaussianNB()
-		# res = cross_val_score(gnb, X_train, y_train, cv=10)
-	# print("Cross validation: ", np.mean(res), np.std(res))
+	# print("Naive Bayes")
+	# with Timer('Naive Bayes with Gaussian probabilities'):
+	# 	gnb = GaussianNB()
+	# 	res = cross_val_score(gnb, X_train, y_train, cv=10)
+	# 	print("Cross validation: ", np.mean(res), np.std(res))
 
-	with open('training/modelo_gnb.pickle', 'wb') as f:
-		pickle.dump(gnb, f)
+	# with open('training/modelo_gnb.pickle', 'wb') as f:
+	# 	pickle.dump(gnb, f)
 
-	with Timer('Naive Bayes fit'):
-		gnb.fit(X_train, y_train)
+	# with Timer('Naive Bayes fit'):
+	# 	gnb.fit(X_train[:,0:200], y_train)
+	# 	print("Test set mean accuracy:", gnb.score(X_test_models[:,0:200],y_test_models))
+	# 	predictions_test = gnb.predict(X_test_models[:,0:200])
+	# 	y_test_list = list(y_test_models)
+	# 	print(performance_measure(predictions_test, y_test_list))
 
-	print("Test set mean accuracy:", gnb.score(X_test,y_test))
-	predictions_test = gnb.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
+	# with Timer('Naive Bayes fit'):
+	# 	gnb.fit(X_train[:,0:500], y_train)
+	# 	print("Test set mean accuracy:", gnb.score(X_test_models[:,0:500],y_test_models))
+	# 	predictions_test = gnb.predict(X_test_models[:,0:500])
+	# 	y_test_list = list(y_test_models)
+	# 	print(performance_measure(predictions_test, y_test_list))
+
+	# with Timer('Naive Bayes fit'):
+	# 	gnb.fit(X_train, y_train)
+	# 	print("Test set mean accuracy:", gnb.score(X_test_models,y_test_models))
+	# 	predictions_test = gnb.predict(X_test_models)
+	# 	y_test_list = list(y_test_models)
+	# 	print(performance_measure(predictions_test, y_test_list))
+
+	for trees in [100]: #[30, 50, 100, 150, 200]:
+
+		print('Trees: {}'.format(trees))
+
+		# Random Forest Classifier
+		with Timer('Random Forest Classifier'):
+			rf = RandomForestClassifier(n_estimators=trees)
+			# res = cross_val_score(rf, X_train, y_train, cv=10)
+		# print("Cross validation: ", np.mean(res), np.std(res))
+		
+		# with open('training/modelo_rf.pickle', 'wb') as f:
+		# 	pickle.dump(rf, f)
+			
+		with Timer('Random Forest fit'):
+			rf.fit(X_train, y_train)
+
+		print("Test set mean accuracy:", rf.score(X_test, y_test))
+		predictions_test = rf.predict(X_test)
+		y_test_list = list(y_test)
+		print(performance_measure(predictions_test, y_test_list))
+
+	# # AdaBoost
+	# with Timer('AdaBoost Classifier'):
+	# 	ada = AdaBoostClassifier(n_estimators=150)
+	# 	# res = cross_val_score(ada, X_train, y_train, cv=10)
+	
+	# # print("Cross validation: ", np.mean(res), np.std(res))
+		
+	# with Timer('AdaBoost fit'):
+	# 	ada.fit(X_train, y_train)
+
+	# with open('training/modelo_ada.pickle', 'wb') as f:
+	# 	pickle.dump(ada, f)
+
+	# print("Test set mean accuracy:", ada.score(X_test,y_test))
+	# predictions_test = ada.predict(X_test)
+	# y_test_list = list(y_test)
+	# print(performance_measure(predictions_test, y_test_list))
+
+	# # Training using 10 fold CV.
+	# with Timer('Decision Tree Classifier'):
+	# 	dtc = DecisionTreeClassifier()
+	# 	# res = cross_val_score(dtc, X_train, y_train, cv=10)
+
+	# # print("Cross validation: ", np.mean(res), np.std(res))
+
+	# with Timer('Decision Tree Classifier fit'):
+	# 	dtc.fit(X_train, y_train)
+
+	# # Save model
+	# with open('training/modelo_dtc.pickle', 'wb') as f:
+	# 	pickle.dump(dtc, f)
+	
+	# print("Test set mean accuracy:", dtc.score(X_test,y_test))
+	# predictions_test = dtc.predict(X_test)
+	# y_test_list = list(y_test)
+	# print(performance_measure(predictions_test, y_test_list))
 
 	# KNN
 	print("KNN")
-	with Timer('K Nearest Neighbours'): # creo que no tiene sentido
-		neigh = KNeighborsClassifier(n_neighbors=20)
-		res = cross_val_score(neigh, X_train, y_train, cv=10)
-		print("Cross validation: ", np.mean(res), np.std(res))
-	with open('training/modelo_knn.pickle', 'wb') as f:
-		pickle.dump(neigh, f)
+	for k in [5, 10, 20]:
+		print('K: {}'.format(k))
+		with Timer('K Nearest Neighbours'): # creo que no tiene sentido
+			neigh = KNeighborsClassifier(n_neighbors=k)
+			# res = cross_val_score(neigh, X_train, y_train, cv=10)
+			# print("Cross validation: ", np.mean(res), np.std(res))
+		# with open('training/modelo_knn.pickle', 'wb') as f:
+		# 	pickle.dump(neigh, f)
 
-	with Timer('KNN fit'):
-		neigh.fit(X_train, y_train)
+		with Timer('KNN fit'):
+			neigh.fit(X_train, y_train)
 
-	print("Test set mean accuracy:", neigh.score(X_test,y_test))
-	predictions_test = neigh.predict(X_test)
-	y_test_list = list(y_test)
-	print(performance_measure(predictions_test, y_test_list))
+		print("Test set mean accuracy:", neigh.score(X_test_models,y_test_models))
+		predictions_test = neigh.predict(X_test_models)
+		y_test_list = list(y_test)
+		print(performance_measure(predictions_test, y_test_list))
 
 	# SVM
 	# with Timer('Support Vector Machine (SVM)'): # no tiene sentido

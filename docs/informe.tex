@@ -61,7 +61,7 @@
       \hskip1.5em plus0em minus0.5em \fi \nobreak
       \vrule height0.75em width0.5em depth0.25em\fi}
 
-\title{Aprendizaje Automatico \\ Trabajo Práctico 1 \\ Detección de Spam }
+\title{Aprendizaje Automático \\ Trabajo Práctico 1 \\ Detección de Spam }
 
 \newcommand{\order}[1]{$\mathcal{O}(#1)$}
 
@@ -78,7 +78,7 @@
 \begin{tabular}{|l l l l|}
 \hline
 Integrante       & \multicolumn{1}{c}{LU}     & Correo electrónico       	& Carrera \\ \hline
-Martin Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com & Computación (Licenciatura) \\ 
+Martín Baigorria & \multicolumn{1}{c}{575/14} & martinbaigorria@gmail.com & Computación (Licenciatura) \\ 
 Damián Furman & \multicolumn{1}{c}{936/11}& damian.a.furman@gmail.com & Computación (Licenciatura)\\
 Germán Abrevaya & \multicolumn{1}{c}{-} & germanabrevaya@gmail.com & Física (Doctorado)\\ \hline
 \end{tabular}
@@ -107,28 +107,20 @@ Segunda entrega &         &      \\ \hline
 
 \section{Introducción}
 
-El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para intentar buscar una mejor performance de los algoritmos de aprendizaje. Dejamos el 10\% de los datos como testing set, utilizando el resto para experimentar con los diferentes modelos. Al elegir los hiperparametros sobre el training set, caemos en la posibilidad de estar haciendo overfitting. Siguiendo el Principio de Occam, una vez elegido el modelo que utilizaremos, también haremos feature selection para intentar encontrar el modelo mas simple posible con una performance que consideremos razonable.
+El objetivo de este trabajo practico es experimentar con diferentes técnicas de aprendizaje automático para entrenar un clasificador de mensajes de correo electrónico en dos clases, 'spam' y 'ham'. Para ello, se utilizaran diferentes modelos y métodos para buscar los diferentes atributos que utilizaremos. Se experimentaran con diferentes técnicas de reducción de dimensionalidad. Además, se evaluaran los diferentes hiperparametros de cada modelo para intentar buscar una mejor performance de los algoritmos de aprendizaje. Dejamos el 10\% de los datos como testing set, utilizando el resto para experimentar con los diferentes modelos. Al elegir los hiperparametros sobre el training set, caemos en la posibilidad de estar haciendo overfitting. Siguiendo el Principio de Occam, a performance similar, optaremos siempre por el modelo mas simple.
 
 \section{Extracción de atributos}
 
 \subsection{Bag of words}
 
-En una primera etapa, antes de intentar seleccionar atributos de forma manual, la idea fue analizar la frecuencia de cada palabra en cada mail, ignorando el orden de las palabras. Notar que los mails están en formato MIME, por lo que no se podía simplemente hacer un análisis de frecuencia sobre el MIME en plaintext, si no que había que utilizar un parser para luego poder analizar las diferentes partes de cada correo. Además, muchos de los correos no estaban en utf-8, lo que dificultaba el análisis. Por esa razón decidimos ignorarlos para el análisis de frecuencia.
+En una primera etapa, antes de intentar seleccionar atributos de forma manual, la idea fue analizar la frecuencia de cada palabra en cada mail, ignorando el orden de las palabras. Notar que los mails están en formato MIME, por lo que no se podía simplemente hacer un análisis de frecuencia sobre el MIME en plaintext, si no que había que utilizar un parser para luego poder analizar las diferentes partes de cada correo. Además, muchos de los correos no estaban en UTF-8, lo que dificultaba el análisis. Por esa razón decidimos ignorarlos para el análisis de frecuencia.
 
 Dado que el alto tiempo de computo para calcular la frecuencia de cada palabra en cada mail, decidimos simplemente tomar una variable binaria por mail que indica si la misma esta o no en el mismo. La idea fue calcular por clase cuantas veces aparecía cada palabra en el cuerpo de un correo, para luego ordenar todas las palabras por la diferencia absoluta en frecuencia relativa y de esa forma seleccionar los mejores atributos. Seguramente existe un orden mejor, pero lo que buscábamos era encontrar las palabras que mas distinguían entre las dos clases. Una idea que teníamos a priori además es que todas las conjunciones iban a aparecer con la misma frecuencia en ambas clases, por lo que al calcular su respectivo score se compensarían y no aparecerían en nuestros resultados finales. Además ignoramos todos los números, dado que creemos que no es un buen predictor.
 
-En una primera etapa, para decidir que atributos se iban a tener en cuenta tomamos todas las palabras que mostraban una diferencia de frecuencia relativa entre clases de mails mayor o igual a 100. De esta forma terminamos seleccionando XXX atributos. Entre ellos se encuentran:
+En una primera etapa, para decidir que atributos se iban a tener en cuenta tomamos todas las palabras que mostraban una diferencia de frecuencia relativa entre clases de mails mayor o igual a 500. De esta forma terminamos preseleccionando 1.019 atributos. Entre ellos se encuentran:
 
-['please', 'original message', 'thanks', 'any', 'attached', 'questions', 'call', 'gas', 'date', 'corp', 'file',
-	'energy', 'need', 'meeting', 'group', 'power', 'following', 'there', 'final', 'should', 'more', 'schedule',
-	'review', 'think', 'week', 'some', 'deal', 'start', 'scheduling', 'contract', 'money', 'professional', 'been',
-	'last', 'work', 'schedules', 'issues', 'viagra', 'however', 'contact', 'thank', 'between', 'solicitation', 'comments',
-	'sex', 'messages', 'discuss', 'software', 'save', 'received', 'site', 'changes', 'txt', 'advertisement', 'parsing', 'prices',
-	'morning', 'click', 'sure', 'visit', 'stop', 'only', 'working', 'next', 'trading', 'plan', 'tomorrow',
-	'awarded', 'soft', 'detected', 'now', 'like', 'about', 'doc', 'who', 'windows', 'basis', 'online', 'product', 'conference',
-	'prescription', 'products', 'best', 'fyi', 'point', 'agreement', 'regarding', 'forward', 'north', 'family', 'world', 'team',
-	'process', 'help', 'cialis', 'adobe', 'down', 'results', 'thousand', 'first', 'issue', 'link', 'offers', 'note',
-	'scheduled', 'management', 'capacity', 'market', 'bill', 'employees', 'daily', 'dollars']
+['subject', 'please', 'original message', 'thanks', 'will', 'have', 'this', 'know', 'that', 'for', 'let', 'enron', 'would', 'any', 'attached', 'questions', 'call', 'are', 'here', 'with', 'gas', 'date', 'corp', 'has', 'monday', 'file', 'friday', 'and', 'houston', 'october', 'wednesday', 'not', 'energy', 'you', 'meeting', 'tuesday', 'need', 'thursday', 'group', 'california', 'power', 'but', 'following', 'there', 'november', 'should', 'final', 'was', 'more', 'they', 'schedule', 'review', 'think', 'john', 'deal', 'ect', 'start', 'scheduling', 'portland', 'what', 'money', 'been', 'contract', 'fax', 'professional', 'may', 'mark', 'hou', 'last', 'work', 'contact', 'iso', 'issues', 'schedules', 'log', 'vince', 'viagra', 'still', 'however', 'hourahead', 'can', 'solicitation', 'back', 'between', 'comments', 'mailto', 'also', 'discuss', 'thank', 'software', 'january', 'messages', 'save', 'were', 'mike', 'your', 'received', 'site', 'had', 'changes', 'advertisement', 'size', 'could', 'smith', 'prices', 'txt', 'westdesk', 'parsing', 'morning', 'louise', 'david', 'sure', 'well', 'going', 'click', 'working', 'visit', 'font', 'only', 'jeff', 'trading', 'stop', 'next', 'like', 'plan', 'did', 'tomorrow', 'now', 'north', 'regarding', 'product', 'best', 'agreement', 'online', 'forward', 'conference', 'texas', 'fyi', 'prescription', 'products', 'point', 'family', 'process', 'these', 'team', 'world', 'adobe', 'results', 'kaminski', 'help', 'cialis', 'offers', 'note', 'market', 'management', 'many', 'employees', 'kevin', 'michael', 'scheduled', 'his', 'capacity', 'august', 'which', 'daily', 'bill', 'photoshop', 'end', 'data', 'request', 'dollars', 'probably', 'chris', 'james', 'below', 'two', 'act', 'him', 'microsoft', 'during', 'pipeline', 'future', 'how', 'ena', 'done', 'copies', 'prohibited', 'requested', 'delete', 'services', 'put', 'another', 'either', 'robert', 'macromedia', 'into', 'desk', 'able', 'weight', 'global', 'flash', 'related', 'sender', 'asked', 'jim', 'yourself', 'hope', 'markets', 'each', 'quality', 'distribution', 'kitchen', 'email', 'update', 'might', 'good', 'discussed', 'stocks', 'phone', 'our', 'set', 'differ', 'security', 'anything', 'offer', 'attachments', 'talk', 'wish', 'afternoon', 'privileged', 'yet', 'whether', 'create', 'look', 'low', 'easy', 'available', 'advice', 'uncertainties', 'summary', 'already', 'confidential', 'xls', 'meaning', '100\%', 'shipping', 'report', 'joe', 'copy', 'until', 'richard', 'cause', 'premiere', 'provide', 'west', 'risk']
+
 
 \pagebreak
 
@@ -150,105 +142,75 @@ Con estos atributos buscamos captar distintas propiedades frecuentes en los mail
 
 A su vez, a las palabras determinadas por el Bag of Words le agregamos varias palabras que consideramos de posible aparición frecuente en mails de spam, a saber: offer, sex, viagra, Nigeria, discount entre varias otras.
 
-\section{Modelos}
+\section{Model Selection}
 
-Luego de definir nuestros atributos, probamos distintos modelos con el objetivo de evaluar su performance. Decidimos utilizar para nuestra comparación Naive Bayes, Decision Tree Classifier, Random Forest Classifier, Support Vector Machine, K Nearest Neighbours y AdaBoost. Éste último es similar a la técnica de boosting vista en clase, en la cual la salida de otros algoritmos de machine learning (``weak learners'') son combinadas en una suma pesada que representa la salida final del clasificador. La principal diferencia de un simple boosting respecto a AdaBoostes que este último es adaptativo en el sentido de que los weak learners subsiguientes son a su vez orientados para corregir las instancias mal clasificadas por los anteriores weak learners.
+Luego de definir nuestros atributos, probamos distintos modelos con el objetivo de evaluar su performance. Decidimos utilizar para nuestra comparación Naive Bayes, Decision Tree Classifier, Random Forest Classifier, Support Vector Machine y K Nearest Neighbours y AdaBoost. 
 
-Antes de entrenar los modelos, se separó el 10\% de los datos totales para ser empleados como testing set y dar una medida más realista del desempeño de los modelos, entrenados con el 90\% restante de los datos.
+%Éste último es similar a la técnica de boosting vista en clase, en la cual la salida de otros algoritmos de machine learning (``weak learners'') son combinadas en una suma pesada que representa la salida final del clasificador. La principal diferencia de un simple boosting respecto a AdaBoostes que este último es adaptativo en el sentido de que los weak learners subsiguientes son a su vez orientados para corregir las instancias mal clasificadas por los anteriores weak learners.
 
-% AdaBoost is sensitive to noisy data and outliers. AdaBoost training process selects only those features known to improve the predictive power of the model, reducing dimensionality and potentially improving execution time as irrelevant features do not need to be computed.
+Antes de entrenar los modelos, se separó el 10\% de los datos totales para ser empleados como test set, y el resto como training set. Para seleccionar un modelo final, la idea es probar todos los modelos bajo diferentes configuraciones haciendo cross validation sobre el training set, y luego seguir trabajando con el que nos de los mejores resultados. El test set lo guardamos para cuando finalmente tengamos seleccionado un modelo, podamos tener una idea de que tan bien generaliza bajo la elección de hiperparametros que hagamos.
 
-\section{Resultados}
+\subsection{Support Vector Machines}
 
-A contiunación se presentarán para distintos modelos el tiempo de cómputo para entrenar al modelo (sin cross-validation), \emph{Train mean accuracy} (calculado sobre los datos de entrenamiento empleando un K-Folding Cross Validation con K = 10), cantidad de falsos y verdaderos casos positivos y negativos (calculados en base a la predicción de sobre el training set), \textit{precision} y \textit{recall}, definidos como:
+SVM resultó poco practico debido al descomunal tiempo de computo necesario para entrenar el modelo. Quitándole 90 atributos calculados mediante Bag of Words el tiempo de cómputo para entrenar al modelo (sin cross-validation) fue de 2:17 horas. El test mean accuracy resultó en este caso de 0.7933, la precision fue de 0.8829 y el recall, 0.6739. SVM utiliza quadratic programming lo cual conlleva un gran tiempo de cálculo cuando se trabaja con muchas dimensiones. No hay un criterio marcado de localidad para buscar hiperplanos separadores. Para sacarle más provecho a este método haría falta un kernel especifico.
 
-\begin{align*}
-\text{precision}& =\frac{\text{verdaderos positivos}}{\text{verdaderos positivos} + \text{falsos positivos}}&
-\text{recall}& =\frac{\text{verdaderos positivos}}{\text{verdaderos positivos} + \text{falsos negativos}}&
-\end{align*}
-
-
-
-%Los resultados son los siguientes:
-%
-%\begin{table}[H]
-%	\centering
-%	\label{my-label}
-%	\begin{tabular}{|l|l|l|l|l|l|}
-%		\hline
-%		\textbf{}             & \multicolumn{1}{c|}{\textbf{Rand. Forest}} & \multicolumn{1}{c|}{\textbf{Decision Tree}} & \multicolumn{1}{c|}{\textbf{SVM}} & \multicolumn{1}{c|}{\textbf{Naive Bayes}} & \multicolumn{1}{c|}{\textbf{kNN}} \\ \hline
-%		Train mean accuracy    & 0.9538                                      & 0.9204                                      & 0.7933                            & 0.8059                                    & 0.8714                            \\ \hline
-%		false positives       & 169                                         & 354                                         & 400                               & 1321                                      & 762                               \\ \hline
-%		false negatives       & 247                                         & 362                                         & 1460                              & 426                                       & 395                               \\ \hline
-%		true positives        & 4187                                        & 4086                                        & 3017                              & 4100                                      & 4131                              \\ \hline
-%		true negatives        & 4397                                        & 4198                                        & 4123                              & 3153                                      & 3712                              \\ \hline
-%		precision             & 0.9612                                      & 0.9203                                      & 0.8829                            & 0.7563                                    & 0.8443                            \\ \hline
-%		recall                & 0.9443                                      & 0.9186                                      & 0.6739                            & 0.9059                                    & 0.9127                            \\ \hline
-%		tiempo de cómputo (s) & 272.41                                      & 34.48                                       & 8220                 & 0.32                                      & 1181.95                           \\ \hline
-%	\end{tabular}
-%\end{table}
-
-
-
-
-
-\subsection{Support Vector Machine}
-
-Este método resultó impráctico debido al descomunal tiempo de computo necesario para entrenar el modelo. Quitándole 90 atributos calculados mediante Bag of Words el tiempo de cómputo para entrenar al modelo (sin cross-validation) fue de 2:17 horas. El Test mean accuracy resultó en este caso de 0.7933, la precision fue de 0.8829 y el recall, 0.6739. SVM utiliza quadratic programming lo cual conlleva un gran tiempo de cálculo cuando se trabaja con muchas dimensiones. No hay un criterio marcado de localidad para buscar hiperplanos separadores. Para sacarle más provecho a este método haría falta un kernel especifico.
+\pagebreak
 
 \subsection{Naive Bayes}
 
-Naive Bayes tiene la interesante propiedad de dar resultados acpetables pagando un tiempo de cómputo mínimo (tarda 0.32 segundos en entrenarse sobre el corpus de texto completo compuesto por 9 mil mails). Sin embargo, sus resultados no son aceptables en términos de un clasificador real. Principalmente porque, como se puede ver en el Cuadro \ref{naive}, si bien logra un \textit{accuracy} de un 80\%, genera una gran cantidad de falsos positivos en relación a los falsos negativos (\textit{recall} es de un 90\% mientras que \textit{precision} es de un 75\%). Naive Bayes considera cada uno de los atributos como un factor independiente de los otros atributos que aporta 'probabilisticamente' a la decisión sobre la clasificación de un elemento. Por esto decidimos quitar varios de sus atributos e ir agregándoselos por partes para de esta manera comprobar cómo varían los resultados obtenidos.
+A continuación se pueden ver los resultados de diferentes configuraciones de Naive Bayes con probabilidades gausianas. Dado el supuesto de independencia de los features, decidimos ir agregando atributos de a poco para observar como se comportaban las diferentes métricas de performance.
 
 \begin{table}[H]
 	\centering
 	\begin{tabular}{|l|l|l|l|}
 		\hline
-		\textbf{}          & \multicolumn{1}{c|}{\textbf{10 Atributos}} & \multicolumn{1}{c|}{\textbf{65 Atributos}} & \multicolumn{1}{c|}{\textbf{130 Atributos}} \\ \hline
-		Train mean accuracy & 0.49                                       & 0.6162                                     & 0.8059                                      \\ \hline
-		false positives    & 4465                                       & 3269                                       & 1321                                        \\ \hline
-		false negatives    & 125                                        & 185                                        & 426                                         \\ \hline
-		true positives     & 4266                                       & 4285                                       & 4100                                        \\ \hline
-		true negatives     & 144                                        & 1261                                       & 3153                                        \\ \hline
-		precision          & 0.4886                                     & 5672                                       & 0.7563                                      \\ \hline
-		recall             & 0.9715                                     & 0.9586                                     & 0.9059                                      \\ \hline
+		\textbf{}          & \multicolumn{1}{c|}{\textbf{200 Atributos}} & \multicolumn{1}{c|}{\textbf{500 Atributos}} & \multicolumn{1}{c|}{\textbf{Todos}} \\ \hline
+Train mean accuracy & 0.6798 & 0.6851 & 0.6493 \\ \hline
+False positives     & 2593 & 2680 & 3060 \\ \hline
+False negatives     & 288 & 154 & 96 \\ \hline
+True positives      & 4220 & 4354 & 4412 \\ \hline
+True negatives      & 1899 & 1812 & 1432 \\ \hline
+Precision           & 0.6194 & 0.6189 & 0.5904 \\ \hline
+Recall              & 0.9361 & 0.9658 & 0.9787 \\ \hline
 	\end{tabular}
-	\caption{Resultados de Naive Bayes.}
-		\label{naive}
+	\caption{Resultados de Naive Bayes al ir agregando atributos al modelo. Los resultados son calculados tomando el promedio de cada métrica al hacer 10 fold cross validation.}
+	\label{naive}
 \end{table}
 
-Lo primero que podemos observar es que el clasificador Naive Bayes es muy sensible a la cantidad de atributos: parecería mejorar invariablemente en la medida que se agregan más. Esto sucede debido a que como cada atributo se considera independiente del resto y aporta una 'porción' de la probabilidad, al agregar más atributos la probabilidad total debería estar más afinada. Por otro lado, Naive Bayes no distingue distintas importancias entre los atributos, por lo que la efectividad de éste método también está supeditada a que la elección de los atributos que se agregan sea correcta.
-
-Otra observación que puede realizarse es que cuando el clasificador no tiene suficiente cantidad de atributos tiende a clasificar todo en la misma categoría. En el caso de nuestra experiencia puede verse como con 10 atributos casi todos los mails fueron clasificados como Spam, lo cual genera que la métrica de \textit{precisión} sea bajísima mientras que el \textit{recall} tiene valores muy altos.
-
-\pagebreak
+Lo primero que nos llamo la atención fue el bajo tiempo de computo (menor a 5 minutos) en comparación con SVM. Otro factor interesante que observamos es que agregar atributos no necesariamente es mejor. La ganancia en accuracy en pasar de 200 a 500 atributos no parece significativa, y de hecho baja cuando agregamos todos los atributos que teníamos disponibles. En este caso parece que los mejores resultados los logramos con 500 atributos. En caso de que los otros modelos no logren una diferencia significativa en performance, quizás puede ser interesante seguir probando con Naive Bayes y técnicas de feature selection.
 
 \subsection{Random Forests}
 
-El tiempo de cómputo de un modelo Random Forest con todos los atributos y con 100 árboles fue de 4.54 minutos. Se realizaron varias pruebas con el este clasificador variando uno de sus hiperparámetros más importantes: la cantidad de árboles a utilizar. En el Cuadro \ref{rf} se puede ve cómo este hiperparámetro afecta los resultados en términos de predicción.
+A continuación experimentamos con la técnica de Random Forests, variando el hiperparametro que define la cantidad de arboles utilizados en en el ensemble y utilizando todos los atributos disponibles.
 
 \begin{table}[H]
 	\centering
 	\begin{tabular}{|l|l|l|l|l|l|}
 		\hline
-		\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{30 árboles}} & \multicolumn{1}{c|}{\textbf{50 árboles}} & \multicolumn{1}{c|}{\textbf{100 árboles}} & \textbf{150 árboles} & \textbf{200 árboles} \\ \hline
-		Test mean accuracy              & 0.9518                                   & 0.9521                                   & 0.9538                                    & 0.9566               & 0.9529               \\ \hline
-		false positives                 & 150                                      & 155                                      & 169                                       & 144                  & 158                  \\ \hline
-		false negatives                 & 284                                      & 276                                      & 247                                       & 247                  & 266                  \\ \hline
-		true positives                  & 4256                                     & 4296                                     & 4187                                      & 4256                 & 4247                 \\ \hline
-		true negatives                  & 4310                                     & 4123                                     & 4397                                      & 4353                 & 4329                 \\ \hline
-		precision                       & 0.9660                                   & 0.9652                                   & 0.9612                                    & 0.9673               & 0.9641               \\ \hline
-		recall                          & 0.9374                                   & 0.9396                                   & 0.9443                                    & 0.9451               & 0.9411               \\ \hline
+		\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{30 árboles}} & \multicolumn{1}{c|}{\textbf{50 árboles}} & \multicolumn{1}{c|}{\textbf{100 árboles}} & \textbf{150 árboles} & \textbf{200 árboles} \\
+\hline
+Train mean accuracy & 0.9795 & 0.9786 & 0.9812 & 0.9801 & 0.9808\\ \hline
+False positives     & 82 & 94 & 83 & 93 & 88\\ \hline
+False negatives     & 102 & 98 & 96 & 86 & 84\\ \hline
+True positives      & 4406 & 4410 & 4422 & 4422 & 4424\\ \hline
+True negatives      & 4410 & 4398 & 4409 & 4399 & 4404       \\ \hline
+Precision           & 0.9817 & 0.9791 & 0.9810 & 0.9796 & 0.9813 \\ \hline
+Recall              & 0.9773 & 0.9767 & 0.9780 & 0.9802 & 0.9804 \\ \hline
+Time taken          & 15.84s & 23.69s & 46.27s & 66.67s & 89.44s \\ \hline
 	\end{tabular}
-		\caption{Resultados de Random Forest.}
-		\label{rf}
+	\caption{Resultados de Random Forest cambiando la cantidad de arboles. Los resultados son calculados tomando el promedio de cada métrica al hacer 10 fold cross validation.}
+	\label{rf}
 \end{table}
 
-En primer lugar se puede observar que aumentar la cantidad de árboles en general tiende a mejorar la \textit{accuracy} aunque su variación es relativamente pequeña (alrededor del 0,2\%). Sin embargo, con un exceso de arboles la \textit{accuracy} comienza a disminuir, aunque también con una tasa de decrecimiento baja. En general la eficiencia de este algoritmo como clasificador para nuestro cuerpo de datos no parece ser muy sensible ante variaciones de la cantidad de árboles empleada, al menos en el rango de 30 a 200 árboles. Aún así, el mejor resultado, tanto en términos de accuracy como de recall y de precision, se obtuvo al correr Random Forest con 150 árboles.
+En general el tiempo de computo fue menor a 2 minutos, hasta en el caso en el que utilizamos 200 arboles. Parece que el tiempo es lineal en la cantidad de arboles. En cuanto a performance, Random Forests con 100 arboles tiene la mejor accuracy y precision, por lo que hasta el momento es el modelo que utilizaremos.
+
+Se puede observar que aumentar la cantidad de árboles en general tiende a mejorar la \textit{accuracy} aunque su variación es relativamente pequeña (alrededor del 0,2\%). Sin embargo, a partir de los 100 arboles la \textit{accuracy} comienza a disminuir, aunque también con una tasa de decrecimiento baja. En general, a partir de los 100 arboles los resultados tampoco parecen cambiar mucho, por lo que optar por el modelo mas simple parece la mejor opción.
+
+\pagebreak
 
 \subsection{kNN:}
 
-Para K Nearest Neigbours consideramos intentar mejorar los resultados a partir de variar los k vecinos considerados. Mientras que en una primera instancia utilizamos un k = 5, testeamos luego los resultados de aplicar un k = 10 y k = 20
+Para K Nearest Neigbours consideramos intentar mejorar los resultados a partir de variar los k vecinos considerados. Mientras que en una primera instancia utilizamos un k = 5, testeamos luego los resultados de aplicar un k = 10 y k = 20.
 
 \begin{table}[H]
 	\centering
@@ -256,43 +218,59 @@ Para K Nearest Neigbours consideramos intentar mejorar los resultados a partir d
 	\begin{tabular}{|l|l|l|l|}
 		\hline
 		\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{K = 5}} & \multicolumn{1}{c|}{\textbf{K = 10}} & \multicolumn{1}{c|}{\textbf{K = 20}} \\ \hline
-		Train mean accuracy              & 0.8714                              & 0.8127                               & 0.7949                               \\ \hline
-		false positives                 & 762                                 & 686                                  & 758                                  \\ \hline
-		false negatives                 & 395                                 & 1000                                 & 1088                                 \\ \hline
-		true positives                  & 4131                                & 3468                                 & 3444                                 \\ \hline
-		true negatives                  & 3712                                & 3846                                 & 3710                                 \\ \hline
-		precision                       & 0.8443                              & 0.8348                               & 0.8196                               \\ \hline
-		recall                          & 0.9127                              & 0.7761                               & 0.7599                               \\ \hline
+Train mean accuracy & 0.8244 & 0.8141 & 0.7994 \\ \hline
+False positives     & 821 & 708 & 792 \\ \hline
+False negatives     & 759 & 965 & 1013 \\ \hline
+True positives      & 3749 & 3543 & 3495 \\ \hline
+True negatives      & 3671 & 3784 & 3700 \\ \hline
+Precision           & 0.8203 & 0.8127 & 0.8152 \\ \hline
+Recall              & 0.8316 & 0.8334 & 0.7752 \\ \hline
 	\end{tabular}
+	\caption{Resultados de k Nearest Neighbours cambiando la cantidad de vecinos utilizados para clasificar una nueva instancia. Los resultados son calculados tomando el promedio de cada métrica al hacer 10 fold cross validation.}
+	\label{rf}
 \end{table}
 
-Podemos observar que en la medida que aumenta el k, los resultados son peores. Esto se explica debido a que estamos permitiendo votar a más cantidad de 'vecinos' que se encuentran más lejos dentro del hiperplano con respecto a la coordenada en la que se evaluó el mail que queremos clasificar utilizando los parámetros dados. Si bien un k muy bajo corre el peligro de que el único criterio de clasificación provenga de un \textit{outlyer}, un k muy alto difumina la idea del método kNN que es, a saber, clasificar nuestro corpus en base a la cercanía respecto al corpus que utilizamos como entrenamiento.
-
-
-
-% \subsection{Logistic Regression}
-
-
-
-% \subsection{Bagging}
-% \subsection{Stacking}
-
-\pagebreak
+En cuanto a tiempo de computo, los tres modelos tomaron menos de 10 segundos. Podemos observar que en la medida que aumenta la cantidad de vecinos que consideramos al clasificar una nueva instancia k, los resultados en general empeoran. Esto se debe a que al clasificar una nueva instancia, estamos considerando puntos que probablemente no son locales. Dados estos resultados, Random Forests con 100 arboles sigue siendo el que utilizaremos.
 
 \section{Reducción de dimensionalidad}
 
-Se probó el uso de PCA como técnica de reducción de dimensionaidad y algunos selectores de features, basados en test estadísticos univariados. Para ambos casos se vió que la eficiencia, en cuanto a accuracy, precision y recall, disminuía sin importar con cuantos features nos quedasemos. Sin embargo creemos que aplicando la reducción de dimensionalidad o el selector de features se disminuye el overfitting por usar features muy correlacionadas. Terminamos por elegir aplicar PCA antes de entrenar los modelos, ya que lo consideramos más robusto que el selector de features.
+Se probó el uso de PCA como técnica de reducción de dimensionaidad y algunos selectores de features, basados en test estadísticos univariados. Para ambos casos se vio que la eficiencia, en cuanto a accuracy, precision y recall, disminuía sin importar con cuantos features nos quedásemos. Por lo tanto decidimos simplemente utilizar todos los features que teníamos disponibles.
 
-\textbf{TODO: Elegir el mejor modelo. Hacer PCA vs Feature Selection, quizas probar luego con Grid Search.}
+\section{Modelo final y performance}
+
+Finalmente, dada nuestra experimentación decidimos quedarnos con el modelo que utiliza Random Forests con 100 arboles, sin reducción de dimensionalidad. A continuación podemos ver los resultados que tuvimos entrenando sobre el training set entero y calculando las métricas sobre el test set, comparados con los resultados que obtuvimos sobre el training set.
+
+\begin{table}[H]
+	\centering
+	\begin{tabular}{|l|l|l|l|l|l|}
+		\hline
+		\multicolumn{1}{|c|}{\textbf{Validacion}} & \multicolumn{1}{c|}{\textbf{Cross validation}} & \multicolumn{1}{c|}{\textbf{Test set}} \\
+\hline
+Train mean accuracy & 0.9812 & 0.9795\\ \hline
+False positives     & 83 & 86 \\ \hline
+False negatives     & 96 & 98\\ \hline
+True positives      & 4422 & 4410\\ \hline
+True negatives      & 4409 & 4406       \\ \hline
+Precision           & 0.9810 & 0.9808 \\ \hline
+Recall              & 0.9780 & 0.9782 \\ \hline
+Time taken          & 46.27s & 0.9782 \\ \hline
+	\end{tabular}
+	\caption{Performance de Random Forests. En la primera columna, la performance se mide tomando el promedio de cada métrica al hacer 10 fold cross validation. Por otro lado, la segunda columna muestra el modelo entrenado sobre el traning set y validado sobre el test set.}
+	\label{rfperf}
+\end{table}
+
+Por lo que podemos ver, en general el modelo parece haber generalizo bien y mantenido su performance.
 
 % \section{Resultados}
 % Describir los resultados conseguidos por los distintos modelos y conjuntos de atributos considerados. Preferentemente, resumir los resultados en tablas/figuras. Mencionar los tiempos de ejecución aproximados de cada técnica.
 
+\pagebreak
+
 \section{Discusión}
 
-Los mejores resultados se obtuvieron con los métodos basádos en árboles, y en particular Random Forest, con el cual disminuyen especialmente la cantidad de falsos positivos (mejoran la métrica \textit{precision}), propiedad consideramos que se debe priorizar al construir un clasificador de Spam, y es por esto que fue elegido para la competencia. Mientras que otros métodos que requieren mayor cómputo, como kNN o SVM, no alcanzaron a tener la efectividad de otros más `sencillos'.
+Luego de experimentar con diferentes técnicas de aprendizaje, observamos que los mejores resultados se obtuvieron utilizando métodos basados en arboles, en particular uno con 100 arboles. En el caso del spam, estamos especialmente interesados en disminuir la cantidad de falsos positivos. Random Forests tuvo el menor numero de falsos positivos comparado con otros métodos. El tiempo de ejecución fue otro factor que consideramos relevante. A diferencia de otros métodos como SVM, en general Random Forests fue relativamente rápido de computar.
 
-Son interesantes algunas de las estrategias que emplean los spammers, como por ejemplo \emph{bayesian poisoning}, en la cual procuran emplear la información con la que se entrenan a los filtros de spam para disminuir su efectividad. Incluyen en sus mails spam palabras y otros features estadísticamente característicos de mails ham con el fin de aumentar las probabilidades de ser clasificados como ham. Por otro lado, si los filtros son entrenados con estos mails spam ``envenenados'', tenderá a aumentar la cantidad de falsos positivos.
+Son interesantes algunas de las estrategias que emplean los spammers para evitar este tipo de filtros, como por ejemplo \emph{bayesian poisoning}, en la cual procuran emplear la información con la que se entrenan a los filtros de spam para disminuir su efectividad. Incluyen en sus mails spam palabras y otros atributos estadísticamente característicos de mails ham con el fin de aumentar las probabilidades de ser clasificados como ham. Por otro lado, si los filtros son entrenados con estos mails spam 'envenenados', tenderá a aumentar la cantidad de falsos positivos.
 
 %En principio los mo
 %
